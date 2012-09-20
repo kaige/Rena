@@ -1,0 +1,27 @@
+1:47 PM 9/20/2012
+==================
+
+Attendees: Kai, Lori
+
+1. finalized the architecure design
+2. discussed how to use GitHub
+3. discussed next plan:
+
+next 2-3 weeks:
+-Kai to build the initial framework of how skView, skApp, skElement work together.
+-Lori to build a protoype by using paper.js as our displaying engine.
+  
+ only support point/line.
+
+next that:
+-merge the code base to work together on more detailed features:
+   * connectors
+   * text
+   * more geometry types
+   * ...
+
+next that:
+-Kai to write the skSolver
+-Lori to write the cloud manager
+
+
