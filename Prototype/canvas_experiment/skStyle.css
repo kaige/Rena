@@ -1,0 +1,35 @@
+#line_btn
+{
+position:fixed;
+top:30px;
+left:830px;	
+}
+
+#circle_btn
+{
+position:fixed;
+top:60px;
+left:830px;
+}
+
+#test_btn
+{
+position:fixed;
+top:90px;
+left:830px;
+}
+
+#tempCanvas
+{
+position: absolute; 
+top: 0px; 
+left: 0px;
+}
+
+#drawingCanvas
+{
+position: absolute; 
+top: 0px; 
+left: 0px;
+border: 1px solid #000;
+}
