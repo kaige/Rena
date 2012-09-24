@@ -1,0 +1,49 @@
+#tool_bar
+{
+    position:fixed;
+    top:10px;
+    left:30px;
+    height: 100px;
+    width: 940px;
+    border: 1px solid #101010;
+    box-shadow: 1px 1px 0px #707070;
+    background-color: #FFFAFA;
+    border-radius:2px;
+}
+
+#drawing_tool
+{
+    position:fixed;
+    top:15px;
+    left:40px;
+    height: 80px;
+    width: 100px;
+    border: 1px solid #808080;
+    border-radius:1px;
+}
+
+#line_btn
+{
+    position:relative;
+    top:2px;
+    left:2px; 
+}
+
+#circle_btn
+{
+    position:relative;
+    top:2px;
+    left:1px;
+}
+
+#drawing_canvas
+{
+    position:fixed;
+    top:120px;
+    left:100px;
+    border: 1px solid #808080;
+    width: 800px;
+    height: 600px;
+    margin: 0 auto;
+    box-shadow: 5px 5px 2px #666666;
+}

@@ -8,7 +8,7 @@
   "devDependencies": {
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node Source/server.js"
   },
   "analyze": "false"
 }
