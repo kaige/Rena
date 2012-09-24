@@ -1,0 +1,14 @@
+{
+  "name": "Rena",
+  "version": "0.0.0-1",
+  "subdomain": "Rena",
+  "dependencies": {
+	"ecstatic": "~0.1.5"
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "analyze": "false"
+}
