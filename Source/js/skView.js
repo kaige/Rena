@@ -1,3 +1,9 @@
+//-------------------------------------------------
+//
+//	global variables and functions
+//
+//-------------------------------------------------
+
 var rnView, rnApp;
 
 window.addEventListener('load', onLoad, false);
@@ -7,6 +13,13 @@ function onLoad() {
 	rnApp = new skApp();
 }
 
+
+//-------------------------------------------------
+//
+//	skView
+//
+//-------------------------------------------------
+
 function skView() {
 	this._createGeomBtnGrp = new skRadioButtonGroup();
 	this._createGeomBtnGrp.addRadioButton(new skImgButton("line_btn", "img\\line.png", "img\\line_highlight.png", "img\\line_select.png"));
@@ -15,6 +28,12 @@ function skView() {
 	this._drawingCanvas = document.getElementById('drawing_canvas');
 	this._drawingContex = this._drawingCanvas.getContext('2d');	
 }
+
+//-------------------------------------------------
+//
+//	skRadioButtonGroup: a group of radio buttons
+//
+//-------------------------------------------------
 
 function skRadioButtonGroup() {
 	this._radioButtons = [];
@@ -35,6 +54,12 @@ function skRadioButtonGroup() {
 		}			
 	}
 }
+
+//-------------------------------------------------
+//
+//	skImgButton: a button with image
+//
+//-------------------------------------------------
 
 function skImgButton (id, normalImg, highlightImg, selectImg) {
 	this._obj = document.getElementById(id);
