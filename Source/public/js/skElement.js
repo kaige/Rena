@@ -1,3 +1,11 @@
+// element type
+//
+var kUnknown = 0;
+var kLineSegment = 1;
+var kRectangle = 2;
+var kOval = 3;
+var kCircle = 4;
+
 //-------------------------------------------------
 //
 //	skElement: the base class storing line-width, color, ..., etc
@@ -6,10 +14,11 @@
 
 function skElement() {
 	this._lineWidth = 1;
-	this._color = #000000;
+	this._color = "#000000";
 	this._text = "";
 	this._connectors = [];
 	this._selected = false;
+	this._geom = null;
 	
 	this.setLineWidth = function(w) {
 		this._lineWidth = w;
@@ -42,6 +51,10 @@ function skElement() {
 	this.selected = function() {
 		return this._selected;
 	}
+	
+	this.geom = function() {
+		return this._geom;
+	}
 }
 
 //-------------------------------------------------
@@ -53,10 +66,11 @@ function skElement() {
 function skPoint (point) {
 	skElement.call(this);		// inherit properties
 	
-	this._point = point;
+	this._geom = point;
+	
 }
 
-skPoint..prototype = new skElement();			// inherit methods
+skPoint.prototype = new skElement();			// inherit methods
 
 //-------------------------------------------------
 //
@@ -67,7 +81,11 @@ skPoint..prototype = new skElement();			// inherit methods
 function skLineSegment (lineSegment) {
 	skElement.call(this);			// inherit properties
 	
-	this._lineSegment = lineSegment;
+	this._geom = lineSegment;
+	
+	this.geomType = function() {
+		return kLineSegment;
+	}
 }
 
 skLineSegment.prototype = new skElement();			// inherit methods
@@ -81,7 +99,11 @@ skLineSegment.prototype = new skElement();			// inherit methods
 function skRectangle (rectangle) {
 	skElement.call(this);		// inherit properties
 	
-	this._rectangle = rectangle;
+	this._geom = rectangle;
+	
+	this.geomType = function() {
+		return kRectangle;
+	}
 }
 
 skRectangle.prototype = new skElement();			// inherit methods
@@ -95,7 +117,11 @@ skRectangle.prototype = new skElement();			// inherit methods
 function skOval (oval) {
 	skElement.call(this);		// inherit properties
 	
-	this._oval = oval;
+	this._geom = oval;
+	
+	this.geomType = function() {
+		return kOval;
+	}
 }
 
 skOval.prototype = new skElement();			// inherit methods
@@ -109,7 +135,11 @@ skOval.prototype = new skElement();			// inherit methods
 function skCircle (circle) {
 	skElement.call(this);		// inherit properties
 	
-	this._circle = circle;
+	this._geom = circle;
+	
+	this.geomType = function() {
+		return kCircle;
+	}
 }
 
 skCircle.prototype = new skElement();			// inherit methods

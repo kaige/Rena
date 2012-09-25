@@ -6,11 +6,13 @@
 
 var rnView, rnApp;
 
+paper.install(window);
 window.addEventListener('load', onLoad, false);
 
 function onLoad() {
 	rnView = new skView();
 	rnApp = new skApp();
+	rnGraphicsMgr = new skGraphicsManager();
 }
 
 
@@ -26,7 +28,7 @@ function skView() {
 	this._createGeomBtnGrp.addRadioButton(new skImgButton("circle_btn", "img\\circle.png", "img\\circle_highlight.png", "img\\circle_select.png"));
 	
 	this._drawingCanvas = document.getElementById('drawing_canvas');
-	this._drawingContex = this._drawingCanvas.getContext('2d');	
+	paper.setup(this._drawingCanvas);		// set up canvas with paper.js
 }
 
 //-------------------------------------------------
@@ -101,6 +103,8 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 			that._isSelected = true;
 			that._parentGroup.onSetSelected(that);
 		}
+		
+		rnApp.setCreateElementtype(kLineSegment);
 	}
 	
 	this._obj.onmouseover = this.onMouseOver;
