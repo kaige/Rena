@@ -29,7 +29,7 @@
     left:2px; 
 }
 
-#circle_btn
+#oval_btn
 {
     position:relative;
     top:2px;
@@ -38,12 +38,5 @@
 
 #drawing_canvas
 {
-    position:fixed;
-    top:120px;
-    left:100px;
-    border: 1px solid #808080;
-    width: 800px;
-    height: 600px;
-    margin: 0 auto;
-    box-shadow: 5px 5px 2px #666666;
+    background-color:#A9A9A9
 }

@@ -4,9 +4,8 @@
 //
 //-------------------------------------------------
 
-var rnView, rnApp;
+var rnView, rnApp, rnGraphicsMgr;
 
-paper.install(window);
 window.addEventListener('load', onLoad, false);
 
 function onLoad() {
@@ -14,7 +13,6 @@ function onLoad() {
 	rnApp = new skApp();
 	rnGraphicsMgr = new skGraphicsManager();
 }
-
 
 //-------------------------------------------------
 //
@@ -25,10 +23,7 @@ function onLoad() {
 function skView() {
 	this._createGeomBtnGrp = new skRadioButtonGroup();
 	this._createGeomBtnGrp.addRadioButton(new skImgButton("line_btn", "img\\line.png", "img\\line_highlight.png", "img\\line_select.png"));
-	this._createGeomBtnGrp.addRadioButton(new skImgButton("circle_btn", "img\\circle.png", "img\\circle_highlight.png", "img\\circle_select.png"));
-	
-	this._drawingCanvas = document.getElementById('drawing_canvas');
-	paper.setup(this._drawingCanvas);		// set up canvas with paper.js
+	this._createGeomBtnGrp.addRadioButton(new skImgButton("oval_btn", "img\\oval.png", "img\\oval_highlight.png", "img\\oval_select.png"));
 }
 
 //-------------------------------------------------
@@ -57,6 +52,7 @@ function skRadioButtonGroup() {
 	}
 }
 
+
 //-------------------------------------------------
 //
 //	skImgButton: a button with image
@@ -64,6 +60,7 @@ function skRadioButtonGroup() {
 //-------------------------------------------------
 
 function skImgButton (id, normalImg, highlightImg, selectImg) {
+	this._id = id;
 	this._obj = document.getElementById(id);
 	this._normalImg = normalImg;
 	this._highlightImg = highlightImg;
@@ -104,7 +101,14 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 			that._parentGroup.onSetSelected(that);
 		}
 		
-		rnApp.setCreateElementtype(kLineSegment);
+		rnApp.setCreateElementtype(getGeomTypeById(that._id));
+	}
+	
+	function getGeomTypeById(id) {
+		if (id === "line_btn")
+			return kLineSegment;
+		else if (id === "oval_btn")
+			return kOval;
 	}
 	
 	this._obj.onmouseover = this.onMouseOver;

@@ -1,5 +1,3 @@
-var kDefaultOffsetX = 10;
-var kDefaultOffsetY = kDefaultOffsetX;
 //-------------------------------------------------
 //
 //	skApp
@@ -20,15 +18,12 @@ function skApp() {
 	}
 	
 	this.createElement = function (pt1, pt2) {
-		if (pt1 === pt2)
-			pt2 = new skMPoint(pt1.x() + kDefaultOffsetX, pt1.y() + kDefaultOffsetY);
-		
 		var element;
 		if (this._createElementType == kLineSegment) {
 			element = new skLineSegment(new skMLineSegment(pt1, pt2));
 		}
 		else if (this._createElementType = kOval) {
-			element = new skOval(new skMOval(new skMRect(pt1, pt2), false));
+			element = new skOval(new skMOval(new skMRectangle(pt1, pt2), false));
 		}
 						
 		return element;
