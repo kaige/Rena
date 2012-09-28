@@ -83,12 +83,12 @@ function skGraphicsManager () {
 	
 	function clipDrawingArea() {
 		// draw a white rectangle as the suggested drawing area (but like Google doc and MS power-point, we can still draw outside)
-		//
+	    //
 		var c = new skGraphicsConstant();
 		var path = new Path.Rectangle(new Point(c.backgroundPt1X(), c.backgroundPt1Y()), new Point(c.backgroundPt2X(), c.backgroundPt2Y()));
 		path.fillColor = 'white';
-		path.strokeColor = 'black';
-		path.strokeWidth = 1;
+		path.shadowColor = '#101010';
+		path.shadowBlur = 30;
 		view.draw();
 	}
 	
@@ -110,11 +110,11 @@ function skGraphicsConstant() {
 	}
 	
 	this.backgroundPt1X = function() {
-		return 40;
+		return 50;
 	}
 	
 	this.backgroundPt1Y = function() {
-		return 120;
+		return 20;
 	}
 	
 	this.backgroundPt2X = function() {
@@ -122,7 +122,7 @@ function skGraphicsConstant() {
 	}
 	
 	this.backgroundPt2Y = function() {
-		return 880;
+		return 620;
 	}
 }
 

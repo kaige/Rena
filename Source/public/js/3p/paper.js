@@ -4539,6 +4539,7 @@ var Path = this.Path = PathItem.extend({
 				ctx.beginPath();
 
 			var fillColor = this.getFillColor(),
+                                shadowColor = this.getShadowColor(),
 				strokeColor = this.getStrokeColor(),
 				dashArray = this.getDashArray() || [], 
 				hasDash = !!dashArray.length;
@@ -4559,6 +4560,12 @@ var Path = this.Path = PathItem.extend({
 				if (!fillColor || !strokeColor)
 					ctx.globalAlpha = this._opacity;
 				if (fillColor) {
+				        if (shadowColor) {
+				            ctx.shadowColor = shadowColor.getCanvasStyle(ctx);
+				            ctx.shadowBlur = this.getShadowBlur();
+				            ctx.shadowOffsetX = this.getShadowOffsetX();
+				            ctx.shadowOffsetY = this.getShadowOffsetY();
+				        }
 					ctx.fillStyle = fillColor.getCanvasStyle(ctx);
 					ctx.fill();
 				}
@@ -5767,6 +5774,10 @@ var Style = Item.extend({
 var PathStyle = this.PathStyle = Style.extend({
 	_defaults: {
 		fillColor: undefined,
+	        shadowColor: undefined,
+	        shadowBlur: 0,
+	        shadowOffsetX: 0,
+	        shadowOffsetY: 0,
 		strokeColor: undefined,
 		strokeWidth: 1,
 		strokeCap: 'butt',

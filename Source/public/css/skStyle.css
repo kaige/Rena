@@ -38,5 +38,8 @@
 
 #drawing_canvas
 {
-    background-color:#A9A9A9
+    position:fixed;
+    top:130px;
+    left:0px;
+    background-color:#C3C7CB
 }
