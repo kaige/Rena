@@ -17,7 +17,6 @@ function skElement() {
 	this._color = "#000000";
 	this._text = "";
 	this._connectors = [];
-	this._selected = false;
 	this._geom = null;
 	
 	this.setLineWidth = function(w) {
@@ -42,14 +41,6 @@ function skElement() {
 	
 	this.text = function() {
 		return this._text;
-	}
-	
-	this.setSelected = function(selected) {
-		this._selected = selected;
-	}
-	
-	this.selected = function() {
-		return this._selected;
 	}
 	
 	this.geom = function() {

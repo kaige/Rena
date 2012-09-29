@@ -4,19 +4,20 @@
 //
 //-------------------------------------------------
 
-var rnView, rnApp, rnGraphicsMgr;
+var rnApp, rnView, rnController, rnGraphicsMgr;
 
 window.addEventListener('load', onLoad, false);
 
 function onLoad() {
-	rnView = new skView();
-	rnApp = new skApp();
-	rnGraphicsMgr = new skGraphicsManager();
+    rnApp = new skApp();                        // MVC-model
+    rnView = new skView();                      // MVC-view
+    rnController = new skController();          // MVC-controller
+	rnGraphicsMgr = new skGraphicsManager();    // part of MVC-view
 }
 
 //-------------------------------------------------
 //
-//	skView
+//	skView: the tool-bars, buttons
 //
 //-------------------------------------------------
 
@@ -24,6 +25,12 @@ function skView() {
 	this._createGeomBtnGrp = new skRadioButtonGroup();
 	this._createGeomBtnGrp.addRadioButton(new skImgButton("line_btn", "img\\line.png", "img\\line_highlight.png", "img\\line_select.png"));
 	this._createGeomBtnGrp.addRadioButton(new skImgButton("oval_btn", "img\\oval.png", "img\\oval_highlight.png", "img\\oval_select.png"));
+
+	this.deSelectAllButtons = function () {
+	    // this is a temporary implementation
+	    //
+	    this._createGeomBtnGrp.onSetSelected(null);
+	}
 }
 
 //-------------------------------------------------
@@ -101,7 +108,8 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 			that._parentGroup.onSetSelected(that);
 		}
 		
-		rnApp.setCreateElementtype(getGeomTypeById(that._id));
+		var command = new skCreateGeomCommand(getGeomTypeById(that._id));
+		command.execute();
 	}
 	
 	function getGeomTypeById(id) {
@@ -114,4 +122,55 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 	this._obj.onmouseover = this.onMouseOver;
 	this._obj.onmouseout = this.onMouseOut;
 	this._obj.onclick = this.onMouseClick;
+}
+
+//-------------------------------------------------
+//
+//	skController: define the state of the view
+//
+//-------------------------------------------------
+var skCmdMode = {
+    kNone: 0,
+    kCreateGeom: 1
+};
+
+function skController () {
+    this._commandMode = skCmdMode.kNone;
+    this._createGeomType = kUnknown;
+
+    this.setCommandMode = function (mode) {
+        this._commandMode = mode;
+    }
+
+    this.commandMode = function () {
+        return this._commandMode;
+    }
+
+    this.setCreateGeomtype = function (type) {
+        this._createGeomType = type;
+    }
+
+    this.createGeomType = function () {
+        return this._createGeomType;
+    }
+}
+
+//-------------------------------------------------
+//
+//	skCommand
+//
+//-------------------------------------------------
+
+function skCommand() {
+
+}
+
+function skCreateGeomCommand(geomType) {
+
+    this._createGeomtype = geomType;
+
+    this.execute = function() {
+        rnController.setCommandMode(skCmdMode.kCreateGeom);
+        rnController.setCreateGeomtype(geomType);
+    }
 }
