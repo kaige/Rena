@@ -7,9 +7,8 @@
 function skGraphicsManager() {
 
     var CONST = {
-        defaultOffSet:  { x: 80, y: 80 },
-        drawingArea:    { ul: {x:50, y:20}, lr: {x:950, y:620}}
-    }
+        defaultOffSet:  { x: 80, y: 80 }
+    };
 
     var hitOptions = {
         segments: true,
@@ -22,8 +21,7 @@ function skGraphicsManager() {
 	//
 	paper.install(window);
 	paper.setup('drawing_canvas');	
-	clipDrawingArea();
-	
+
 	// set up mouse event
 	//
 	var tool = new Tool();
@@ -39,13 +37,13 @@ function skGraphicsManager() {
 
 	tool.onMouseDown = function (event) {
 	    if (rnController.commandMode() == skCmdMode.kNone) {
+	        project.deselectAll();
 	        var hitResult = project.hitTest(event.point, hitOptions);
 	        if (hitResult) {
-	            project.deselectAll();
 	            hitResult.item.selected = true;
-	            project.activeLayer.addChild(hitResult.item);
-	            view.draw();
+	            project.activeLayer.addChild(hitResult.item);	            
 	        }
+	        view.draw();
 	    }
 	}
 	
@@ -105,18 +103,7 @@ function skGraphicsManager() {
 		path.strokeColor = 'black';
 		path.fillColor = 'white';
 		return path;
-	}
-	
-	function clipDrawingArea() {
-		// draw a white rectangle as the suggested drawing area (but like Google doc and MS power-point, we can still draw outside)
-	    //
-		var path = new Path.Rectangle(new Point(CONST.drawingArea.ul.x, CONST.drawingArea.ul.y), new Point(CONST.drawingArea.lr.x, CONST.drawingArea.lr.y));
-		path.fillColor = 'white';
-		path.shadowColor = '#101010';
-		path.shadowBlur = 30;
-		view.draw();
-	}
-	
+	}	
 }
 
 
