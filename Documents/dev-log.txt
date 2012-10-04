@@ -1,0 +1,7 @@
+10:05 PM 10/3/2012
+
+--How to change paper.js's default selected drawing appearance?
+
+go to line 4470, in function drawHandles(ctx, segments), change the line:
+//ctx.rect(point._x - 1, point._y - 1, 2, 2);
+

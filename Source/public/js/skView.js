@@ -108,15 +108,13 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 			that._parentGroup.onSetSelected(that);
 		}
 		
-		var command = new skCreateGeomCommand(getGeomTypeById(that._id));
-		command.execute();
-	}
-	
-	function getGeomTypeById(id) {
-		if (id === "line_btn")
-			return kLineSegment;
-		else if (id === "oval_btn")
-			return kOval;
+		var command;
+		if (id == "line_btn")
+		    command = new skCreateLineSegmentCommand();
+		else if (id == "oval_btn")
+		    command = new skCreateOvalCommand();
+        
+		rnController.setActiveCommand(command);
 	}
 	
 	this._obj.onmouseover = this.onMouseOver;
@@ -129,29 +127,16 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 //	skController: define the state of the view
 //
 //-------------------------------------------------
-var skCmdMode = {
-    kNone: 0,
-    kCreateGeom: 1
-};
 
-function skController () {
-    this._commandMode = skCmdMode.kNone;
-    this._createGeomType = kUnknown;
+function skController() {
+    this._activeCommand = null;
 
-    this.setCommandMode = function (mode) {
-        this._commandMode = mode;
+    this.setActiveCommand = function (cmd) {
+        this._activeCommand = cmd;
     }
 
-    this.commandMode = function () {
-        return this._commandMode;
-    }
-
-    this.setCreateGeomtype = function (type) {
-        this._createGeomType = type;
-    }
-
-    this.createGeomType = function () {
-        return this._createGeomType;
+    this.activeCommand = function () {
+        return this._activeCommand;
     }
 }
 
@@ -162,15 +147,123 @@ function skController () {
 //-------------------------------------------------
 
 function skCommand() {
-
+    this.onMouseDown = function (event) { }
+    this.onMouseDrag = function (event) { }
+    this.onMouseUp = function (event) { }
 }
 
-function skCreateGeomCommand(geomType) {
+//-------------------------------------------------
+//
+//	skCreateGeomCommand
+//
+//-------------------------------------------------
 
-    this._createGeomtype = geomType;
+function skCreateGeomCommand() {
+    skCommand.call(this);
 
-    this.execute = function() {
-        rnController.setCommandMode(skCmdMode.kCreateGeom);
-        rnController.setCreateGeomtype(geomType);
+    this.onMouseDrag = function (event) {
+        var tempPath = this.createPath(event.downPoint, event.point);
+        tempPath.strokeColor = 'black';
+        tempPath.fillColor = 'white';
+        tempPath.removeOnDrag();
+        tempPath.removeOnUp();
+    }
+
+    this.onMouseUp = function (event) {
+        project.deselectAll();
+
+        // give shapes a default size when user just clicks the mouse
+        //
+        var CONST = {
+            defaultOffSet: { x: 80, y: 80 }
+        };
+
+        var pt1 = event.downPoint;
+        var pt2 = event.point;
+        if (pt1.equals(pt2)) {
+            pt2 = pt1.add(CONST.defaultOffSet.x, CONST.defaultOffSet.y);
+        }
+
+        var newPath = this.createPath(pt1, pt2);
+        newPath.selected = true;
+        newPath.strokeColor = 'black';
+        newPath.fillColor = 'white';
+        view.draw();
+    }
+}
+
+skCreateGeomCommand.prototype = new skCommand();
+
+//-------------------------------------------------
+//
+//	skCreateLineSegmentCommand
+//
+//-------------------------------------------------
+
+function skCreateLineSegmentCommand() {
+    skCreateGeomCommand.call(this);
+
+    this.createPath = function (pt1, pt2) {
+        return new Path.Line(pt1, pt2);
+    }
+}
+
+skCreateLineSegmentCommand.prototype = new skCreateGeomCommand();
+
+//-------------------------------------------------
+//
+//	skCreateOvalCommand
+//
+//-------------------------------------------------
+
+function skCreateOvalCommand() {
+    skCreateGeomCommand.call(this);
+
+    this.createPath = function (pt1, pt2) {
+        var enclosingRect = new Rectangle(pt1, pt2);
+        var path = new Path.Oval(enclosingRect, false);
+        return path;
+    }
+}
+
+skCreateOvalCommand.prototype = new skCreateGeomCommand();
+
+//-------------------------------------------------
+//
+//	skSelectGeomCommand
+//
+//-------------------------------------------------
+
+function skSelectGeomCommand() {
+    skCommand.call(this);
+
+    rnView.deSelectAllButtons();
+    project.deselectAll();
+    view.draw();
+
+    var hitOptions = {
+        segments: true,
+        stroke: true,
+        fill: true,
+        tolerance: 5
+    };
+
+    this.onMouseDown = function (event) {
+        project.deselectAll();
+        var hitResult = project.hitTest(event.point, hitOptions);
+        if (hitResult) {
+            hitResult.item.selected = true;
+        }
+        view.draw();
+    }
+
+    this.onMouseDrag = function (event) {
+        if (project.selectedItems.length > 0) {
+            var i;
+            for (i = 0; i < project.selectedItems.length; i++) {
+                project.selectedItems[i].translate(event.delta);
+            }
+            view.draw();
+        }
     }
 }
