@@ -59,23 +59,23 @@ function skMLineSegment(pt1, pt2) {
 //-------------------------------------------------
 
 function skMRectangle(pt1, pt2) {
-	this._ulPt = pt1;
-	this._lrPt = pt2;
+	this._topLeft = pt1;
+	this._bottomRight = pt2;
 	
-	this.ulPt = function() {
-		return this._ulPt;
+	this.topLeft = function() {
+		return this._topLeft;
 	}
 	
-	this.lrPt = function() {
-		return this._lrPt;
+	this.bottomRight = function() {
+		return this._bottomRight;
 	}
 	
-	this.setUlPt = function(pt) {
-		this._ulPt = pt;
+	this.setTopLeft = function(pt) {
+		this._topLeft = pt;
 	}
 	
-	this.setLrPt = function(pt) {
-		this._lrPt = pt;
+	this.setBottomRight = function(pt) {
+		this._bottomRight = pt;
 	}
 }
 

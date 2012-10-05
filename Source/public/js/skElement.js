@@ -13,26 +13,36 @@ var kCircle = 4;
 //-------------------------------------------------
 
 function skElement() {
-	this._lineWidth = 1;
-	this._color = "#000000";
+	this._strokeWidth = 1;
+	this._strokeColor = "#000000";
+	this._fillColor = "#FFFFFF";
 	this._text = "";
 	this._connectors = [];
 	this._geom = null;
+	this._listeners = [];
 	
-	this.setLineWidth = function(w) {
-		this._lineWidth = w;
+	this.setStrokeWidth = function(w) {
+		this._strokeWidth = w;
 	}
 	
-	this.lineWidth = function () {
-		return this._lineWidth;
+	this.strokeWidth = function () {
+		return this._strokeWidth;
 	}
 	
-	this.setColor = function(color) {
-		this._color = color;
+	this.setStrokeColor = function(color) {
+		this._strokeColor = color;
 	}
 	
-	this.color = function() {
-		return this._color;
+	this.strokeColor = function() {
+		return this._strokeColor;
+	}
+
+	this.setFillColor = function (color) {
+	    this._fillColor = color;
+	}
+
+	this.fillColor = function () {
+	    return this._fillColor;
 	}
 	
 	this.setText = function(text) {
@@ -46,7 +56,29 @@ function skElement() {
 	this.geom = function() {
 		return this._geom;
 	}
+
+	this.notify = function (event) {
+	    var i;
+	    for (i = 0; i < this._listeners.length; i++) {
+	        this._listeners[i].notify(event);
+	    }
+	}
+
+	this.addListener = function (listener) {
+	    this._listeners.push(listener);
+	}
+
+	this.removeListener = function (listener) {
+	    var i = this._listeners.indexOf(listener);
+	    this._listeners.splice(i, 1);
+	}
+
+	this.moveMathPoint = function (mPt, dx, dy) {
+	    mPt.setX(mPt.x() + dx);
+	    mPt.setY(mPt.y() + dy);
+	}
 }
+
 
 //-------------------------------------------------
 //
@@ -77,6 +109,13 @@ function skLineSegment (lineSegment) {
 	this.geomType = function() {
 		return kLineSegment;
 	}
+
+	this.move = function (dx, dy) {
+	    var pt1 = this._geom.startPt();
+	    var pt2 = this._geom.endPt();
+	    this.moveMathPoint(pt1, dx, dy);
+	    this.moveMathPoint(pt2, dx, dy);
+	}
 }
 
 skLineSegment.prototype = new skElement();			// inherit methods
@@ -94,6 +133,13 @@ function skRectangle (rectangle) {
 	
 	this.geomType = function() {
 		return kRectangle;
+	}
+
+	this.move = function (dx, dy) {
+	    var pt1 = this._geom.topLeft();
+	    var pt2 = this._geom.bottomRight();
+	    this.moveMathPoint(pt1, dx, dy);
+	    this.moveMathPoint(pt2, dx, dy);
 	}
 }
 
@@ -113,6 +159,13 @@ function skOval (oval) {
 	this.geomType = function() {
 		return kOval;
 	}
+
+	this.move = function (dx, dy) {
+	    var pt1 = this._geom.rect().topLeft();
+	    var pt2 = this._geom.rect().bottomRight();
+	    this.moveMathPoint(pt1, dx, dy);
+	    this.moveMathPoint(pt2, dx, dy);
+	}
 }
 
 skOval.prototype = new skElement();			// inherit methods
@@ -130,6 +183,11 @@ function skCircle (circle) {
 	
 	this.geomType = function() {
 		return kCircle;
+	}
+
+	this.move = function (dx, dy) {
+	    var pt1 = this._geom.center();
+	    this.moveMathPoint(pt1, dx, dy);
 	}
 }
 

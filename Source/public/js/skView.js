@@ -4,15 +4,15 @@
 //
 //-------------------------------------------------
 
-var rnApp, rnView, rnController, rnGraphicsMgr;
+var rnApp, rnView, rnController, rnGraphicsManager;
 
 window.addEventListener('load', onLoad, false);
 
 function onLoad() {
-    rnApp = new skApp();                        // MVC-model
-    rnView = new skView();                      // MVC-view
-    rnController = new skController();          // MVC-controller
-	rnGraphicsMgr = new skGraphicsManager();    // part of MVC-view
+    rnApp = new skApp();                            // MVC-model
+    rnGraphicsManager = new skGraphicsManager();    // MVC-view (graphics area)
+    rnView = new skView();                          // MVC-view (menu, tool bar, buttons)
+    rnController = new skController();              // MVC-controller
 }
 
 //-------------------------------------------------
@@ -129,7 +129,7 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 //-------------------------------------------------
 
 function skController() {
-    this._activeCommand = null;
+    this._activeCommand = new skSelectGeomCommand();
 
     this.setActiveCommand = function (cmd) {
         this._activeCommand = cmd;
@@ -137,6 +137,25 @@ function skController() {
 
     this.activeCommand = function () {
         return this._activeCommand;
+    }
+
+    this.deselectAll = function () {
+        var allDispElements = rnGraphicsManager.dispElements();
+        var i;
+        for (i = 0; i < allDispElements.length; i++)
+            allDispElements[i].setIsSelected(false);
+    }
+
+    this.selectedDispElements = function () {
+        var selected = [];
+        var all = rnGraphicsManager.dispElements();
+        var i = 0;
+        for (i = 0; i < all.length; i++) {
+            if (all[i].isSelected()) {
+                selected.push(all[i]);
+            }
+        }
+        return selected;
     }
 }
 
@@ -170,12 +189,12 @@ function skCreateGeomCommand() {
     }
 
     this.onMouseUp = function (event) {
-        project.deselectAll();
+        rnController.deselectAll();
 
         // give shapes a default size when user just clicks the mouse
         //
         var CONST = {
-            defaultOffSet: { x: 80, y: 80 }
+            defaultOffSet: { x: 100, y: 100 }
         };
 
         var pt1 = event.downPoint;
@@ -184,10 +203,12 @@ function skCreateGeomCommand() {
             pt2 = pt1.add(CONST.defaultOffSet.x, CONST.defaultOffSet.y);
         }
 
-        var newPath = this.createPath(pt1, pt2);
-        newPath.selected = true;
-        newPath.strokeColor = 'black';
-        newPath.fillColor = 'white';
+        var mpt1 = skConv.toMathPoint(pt1);
+        var mpt2 = skConv.toMathPoint(pt2);
+        var skelement = this.createSkElement(mpt1, mpt2);
+        var dispElement = this.populateDispElement(skelement);
+        dispElement.setIsSelected(true);
+
         view.draw();
     }
 }
@@ -206,6 +227,19 @@ function skCreateLineSegmentCommand() {
     this.createPath = function (pt1, pt2) {
         return new Path.Line(pt1, pt2);
     }
+
+    this.createSkElement = function (mpt1, mpt2) {
+        var element = new skLineSegment(new skMLineSegment(mpt1, mpt2));
+        rnApp.addElement(element);
+        return element;
+    }
+
+    this.populateDispElement = function (skelement) {
+        var dispElement = new skDispLineSegment(skelement);
+        rnGraphicsManager.addDispElement(dispElement);
+        return dispElement;
+    }
+
 }
 
 skCreateLineSegmentCommand.prototype = new skCreateGeomCommand();
@@ -224,6 +258,19 @@ function skCreateOvalCommand() {
         var path = new Path.Oval(enclosingRect, false);
         return path;
     }
+
+    this.createSkElement = function (mpt1, mpt2) {
+        var element = new skOval(new skMOval(new skMRectangle(mpt1, mpt2), true));
+        rnApp.addElement(element);
+        return element;
+    }
+
+    this.populateDispElement = function (skelement) {
+        var dispElement = new skDispOval(skelement);
+        rnGraphicsManager.addDispElement(dispElement);
+        return dispElement;
+    }
+
 }
 
 skCreateOvalCommand.prototype = new skCreateGeomCommand();
@@ -238,7 +285,9 @@ function skSelectGeomCommand() {
     skCommand.call(this);
 
     rnView.deSelectAllButtons();
-    project.deselectAll();
+    if (rnController) {                 // when loading, the 'rnController' is not created yet
+        rnController.deselectAll();
+    }
     view.draw();
 
     var hitOptions = {
@@ -249,21 +298,30 @@ function skSelectGeomCommand() {
     };
 
     this.onMouseDown = function (event) {
-        project.deselectAll();
+        rnController.deselectAll();
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult) {
-            hitResult.item.selected = true;
+            hitResult.item.dispElement.setIsSelected(true);
         }
         view.draw();
     }
 
     this.onMouseDrag = function (event) {
-        if (project.selectedItems.length > 0) {
+        var selected = rnController.selectedDispElements();
+        if (selected.length > 0) {
             var i;
-            for (i = 0; i < project.selectedItems.length; i++) {
-                project.selectedItems[i].translate(event.delta);
+            for (i = 0; i < selected.length; i++) {
+                var element = selected[i].skElement();
+                element.move(event.delta.x, event.delta.y);
+                var changeEvent = {
+                    message: "geometry moved",
+                    dx: event.delta.x,
+                    dy: event.delta.y
+                }
+                element.notify(changeEvent);
             }
-            view.draw();
         }
     }
 }
+
+skSelectGeomCommand.prototype = new skCommand();
