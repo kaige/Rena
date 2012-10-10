@@ -175,8 +175,7 @@ skDispOval.prototype = new skDispElement();
 //-------------------------------------------------
 
 function skBoundingBox(dispElement) {
-
-    var items = [];
+    this._items = [];
     var sz = 8;
     var r = sz / 2;
 
@@ -186,15 +185,17 @@ function skBoundingBox(dispElement) {
     if (skelement.geomType() === kLineSegment) {
         var startPt = new Path.Circle(pathItem.firstSegment.point, r);
         var endPt = new Path.Circle(pathItem.lastSegment.point, r);
-        items.push(startPt);
-        items.push(endPt);
-
-        this._itemsGroup = new Group(items);
-        this._itemsGroup.style = {
-            fillColor: '#C5E6EA',
-            strokeColor: '#385D8A',
-            strokeWidth: 1
-        };
+        this._items.push(startPt);
+        this._items.push(endPt);
+        
+        var i;
+        for (i = 0; i < this._items.length; i++) {
+            this._items[i].style = {
+                fillColor: '#C5E6EA',
+                strokeColor: '#385D8A',
+                strokeWidth: 1
+            }; 
+        }
     }
     else {
         // calculate point positions
@@ -233,37 +234,45 @@ function skBoundingBox(dispElement) {
         var rightMid = new Path.Rectangle(rightmid.x - r, rightmid.y - r, sz, sz);
         var topMid = new Path.Rectangle(topmid.x - r, topmid.y - r, sz, sz);
 
-        items.push(leftEdge);
-        items.push(lowEdge);
-        items.push(rightEdge);
-        items.push(topEdge);
-        items.push(handleEdge);
-        items.push(tlCorner);
-        items.push(trCorner);
-        items.push(llCorner);
-        items.push(lrCorner);
-        items.push(handleUp);
-        items.push(leftMid);
-        items.push(lowMid);
-        items.push(rightMid);
-        items.push(topMid);
+        this._items.push(leftEdge);
+        this._items.push(lowEdge);
+        this._items.push(rightEdge);
+        this._items.push(topEdge);
+        this._items.push(handleEdge);
+        this._items.push(tlCorner);
+        this._items.push(trCorner);
+        this._items.push(llCorner);
+        this._items.push(lrCorner);
+        this._items.push(handleUp);
+        this._items.push(leftMid);
+        this._items.push(lowMid);
+        this._items.push(rightMid);
+        this._items.push(topMid);
 
-        this._itemsGroup = new Group(items);
-        this._itemsGroup.style = {
-            fillColor: '#C5E6EA',
-            strokeColor: '#385D8A',
-            strokeWidth: 1
-        };
+        var i;
+        for (i = 0; i < this._items.length; i++) {
+            this._items[i].style = {
+                fillColor: '#C5E6EA',
+                strokeColor: '#385D8A',
+                strokeWidth: 1
+            };
+        }
 
         handleUp.fillColor = '#8BE73D';
     }
 
     this.setVisible = function (b) {
-        this._itemsGroup.visible = b;
+        var i;
+        for (i = 0; i < this._items.length; i++) {
+            this._items[i].visible = b;
+        }
     }
 
     this.translate = function (delta) {
-        this._itemsGroup.translate(delta);
+        var i;
+        for (i = 0; i < this._items.length; i++) {
+            this._items[i].translate(delta);
+        }
     }
 }
 
