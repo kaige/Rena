@@ -11,7 +11,8 @@ function skGraphicsManager() {
 	// set up paper with canvas
 	//
 	paper.install(window);
-	paper.setup('drawing_canvas');
+	this._drawingCanvas = document.getElementById('drawing_canvas');
+	paper.setup(this._drawingCanvas);
 
 	// set up mouse event
 	//
@@ -36,6 +37,10 @@ function skGraphicsManager() {
 	tool.onMouseUp = function (event) {
 	    rnController.activeCommand().onMouseUp(event);
 	}
+	
+	tool.onMouseMove = function (event) {
+	    rnController.activeCommand().onMouseMove(event);
+	}
 
     // graphics manager methods
     //
@@ -45,6 +50,10 @@ function skGraphicsManager() {
 
 	this.addDispElement = function (dispElement) {
 	    this._dispElements.push(dispElement);
+	}
+	
+	this.drawingCanvas = function () {
+	    return this._drawingCanvas;
 	}
 }
 
@@ -183,8 +192,8 @@ function skBoundingBox(dispElement) {
     var skelement = dispElement.skElement();
 
     if (skelement.geomType() === kLineSegment) {
-        var startPt = new Path.Circle(pathItem.firstSegment.point, r);
-        var endPt = new Path.Circle(pathItem.lastSegment.point, r);
+        this._startPt = new Path.Circle(pathItem.firstSegment.point, r);
+        this._endPt = new Path.Circle(pathItem.lastSegment.point, r);
         this._items.push(startPt);
         this._items.push(endPt);
         
@@ -217,22 +226,22 @@ function skBoundingBox(dispElement) {
 
         // create paths
         //
-        var leftEdge = new Path.Line(tl, ll);
-        var lowEdge = new Path.Line(ll, lr);
-        var rightEdge = new Path.Line(lr, tr);
-        var topEdge = new Path.Line(tr, tl);
-        var handleEdge = new Path.Line(handledown, handleup);
+        this._leftEdge = new Path.Line(tl, ll);
+        this._lowEdge = new Path.Line(ll, lr);
+        this._rightEdge = new Path.Line(lr, tr);
+        this._topEdge = new Path.Line(tr, tl);
+        this._handleEdge = new Path.Line(handledown, handleup);
 
-        var tlCorner = new Path.Circle(tl, r);
-        var trCorner = new Path.Circle(tr, r);
-        var llCorner = new Path.Circle(ll, r);
-        var lrCorner = new Path.Circle(lr, r);
-        var handleUp = new Path.Circle(handleup, r);
+        this._tlCorner = new Path.Circle(tl, r);
+        this._trCorner = new Path.Circle(tr, r);
+        this._llCorner = new Path.Circle(ll, r);
+        this._lrCorner = new Path.Circle(lr, r);
+        this._handleUp = new Path.Circle(handleup, r);
 
-        var leftMid = new Path.Rectangle(leftmid.x - r, leftmid.y - r, sz, sz);
-        var lowMid = new Path.Rectangle(lowmid.x - r, lowmid.y - r, sz, sz);
-        var rightMid = new Path.Rectangle(rightmid.x - r, rightmid.y - r, sz, sz);
-        var topMid = new Path.Rectangle(topmid.x - r, topmid.y - r, sz, sz);
+        this._leftMid = new Path.Rectangle(leftmid.x - r, leftmid.y - r, sz, sz);
+        this._lowMid = new Path.Rectangle(lowmid.x - r, lowmid.y - r, sz, sz);
+        this._rightMid = new Path.Rectangle(rightmid.x - r, rightmid.y - r, sz, sz);
+        this._topMid = new Path.Rectangle(topmid.x - r, topmid.y - r, sz, sz);
 
         this._items.push(leftEdge);
         this._items.push(lowEdge);

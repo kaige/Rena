@@ -169,6 +169,7 @@ function skCommand() {
     this.onMouseDown = function (event) { }
     this.onMouseDrag = function (event) { }
     this.onMouseUp = function (event) { }
+    this.onMouseMove = function (event) { }
 }
 
 //-------------------------------------------------
@@ -321,6 +322,20 @@ function skSelectGeomCommand() {
                 element.notify(changeEvent);
             }
         }
+    }
+    
+    this.onMouseMove = function (event) {
+        var hitResult = project.hitTest(event.point, hitOptions);
+        if (hitResult) {
+            // if no dispElement is selected, simply change the mouse cursor type to "move"
+            //
+            rnGraphicsManager.drawingCanvas().style.cursor = "move";
+            // if a dispElement is selected and we are on an edge point or a corner point, change to "resize"
+            //
+            
+        }
+        else 
+            rnGraphicsManager.drawingCanvas().style.cursor = "default";
     }
 }
 
