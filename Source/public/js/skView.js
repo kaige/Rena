@@ -301,10 +301,14 @@ function skSelectGeomCommand() {
     this.onMouseDown = function (event) {
         rnController.deselectAll();
         var hitResult = project.hitTest(event.point, hitOptions);
-        if (hitResult) {
-            if (hitResult.item.dispElement)
+        if (hitResult.item.dispElement) {
+            if (!hitResult.item.dispElement.isSelected())
                 hitResult.item.dispElement.setIsSelected(true);
         }
+        else if (hitResult.item.owningBBox) {
+            rnController.setActiveCommand(new skEditGeomCommand(hitResult.item));
+        }
+
         view.draw();
     }
 
@@ -346,8 +350,8 @@ function skSelectGeomCommand() {
     }
 
     this.setLineEndPointCursorStyle = function (pathItem) {
-        var pt1 = pathItem.owningBBox._startPt.position;
-        var pt2 = pathItem.owningBBox._endPt.position;
+        var pt1 = pathItem.owningBBox._anchorPts[0];
+        var pt2 = pathItem.owningBBox._anchorPts[1];
         var vec = pt1.subtract(pt2);
         var mul = vec.x * vec.y;
         if (mul > 0)        // note the canvas coordinate system is y-flip with normal orthogonal system
@@ -357,66 +361,20 @@ function skSelectGeomCommand() {
     }
 
     this.setBBoxAnchorPointCursorStyle = function (pathItem) {
-        var vec;
-        var BBox = pathItem.owningBBox;
-
-        // handle point
-        //
         if (pathItem.isA == "handleEnd") {
             rnGraphicsManager.drawingCanvas().style.cursor = "crosshair";
-            return;
         }
-
-        // corner point
-        //
-        if (pathItem.isA == "tlCorner") {
-            vec = this.getCornerPointVector(pathItem.position, BBox._llCorner.position, BBox._trCorner.position);
-        }
-        else if (pathItem.isA == "trCorner") {
-            vec = this.getCornerPointVector(pathItem.position, BBox._tlCorner.position, BBox._lrCorner.position);
-        }
-        else if (pathItem.isA == "llCorner") {
-            vec = this.getCornerPointVector(pathItem.position, BBox._tlCorner.position, BBox._lrCorner.position);
-        }
-        else if (pathItem.isA == "lrCorner") {
-            vec = this.getCornerPointVector(pathItem.position, BBox._llCorner.position, BBox._trCorner.position);
-        }
-
-        // edge point
-        //
-        else if (pathItem.isA == "topMid") {
-            vec = this.getEdgePointVector(pathItem.position, BBox._lowMid.position);
-        }
-        else if (pathItem.isA == "lowMid") {
-            vec = this.getEdgePointVector(pathItem.position, BBox._topMid.position);
-        }
-        else if (pathItem.isA == "leftMid") {
-            vec = this.getEdgePointVector(pathItem.position, BBox._rightMid.position);
-        }
-        else if (pathItem.isA == "rightMid") {
-            vec = this.getEdgePointVector(pathItem.position, BBox._leftMid.position);
-        }
-
-        this.setCursorStyle(vec);
+        else if (pathItem.hasOwnProperty('anchorIndex')) {
+            var vec = pathItem.owningBBox.getAnchorPointVector(pathItem.anchorIndex);
+            this.setCursorStyle(vec);
+        }        
     }
 
-    this.getCornerPointVector = function (corner, neighbor1, neighbor2) {
-        var vec1 = neighbor1.subtract(corner).normalize();
-        var vec2 = neighbor2.subtract(corner).normalize();
-        var pt1 = corner.add(vec1);
-        var pt2 = corner.add(vec2);
-        var mid = pt1.add(pt2).multiply(0.5);
-        var vec = corner.subtract(mid).normalize();
-        return vec;
-    }
-
-    this.getEdgePointVector = function (pt, oppositePt) {
-        var vec = pt.subtract(oppositePt).normalize();
-        return vec;
-    }
 
     this.setCursorStyle = function (vec) {
-        // flip vectors of 2nd/3rd quadrant to 1st/4th quadrant
+        var canvas = rnGraphicsManager.drawingCanvas();
+
+        // flip vectors in 2nd/3rd quadrant to 1st/4th quadrant
         //
         if (vec.x < 0) {
             vec.set(-vec.x, -vec.y);
@@ -425,17 +383,45 @@ function skSelectGeomCommand() {
         // determine cursor style
         //
         if (vec.x < 0.382683) {     //sin(22.5 deg) == 0.382683
-            rnGraphicsManager.drawingCanvas().style.cursor = "n-resize";
+            canvas.style.cursor = "n-resize";
         }
         else if (vec.x > 0.92388) {     //cos(22.5 deg) == 0.92388
-            rnGraphicsManager.drawingCanvas().style.cursor = "e-resize";
+            canvas.style.cursor = "e-resize";
         }
         else if (vec.y > 0) {
-            rnGraphicsManager.drawingCanvas().style.cursor = "se-resize";
+            canvas.style.cursor = "se-resize";
         }
         else
-            rnGraphicsManager.drawingCanvas().style.cursor = "ne-resize";
+            canvas.style.cursor = "ne-resize";
     }
 }
 
 skSelectGeomCommand.prototype = new skCommand();
+
+//-------------------------------------------------
+//
+//	skSelectGeomCommand
+//
+//-------------------------------------------------
+
+function skEditGeomCommand(anchorPtPathItem) {
+    skCommand.call(this);
+
+    var canvas = rnGraphicsManager.drawingCanvas();
+    canvas.style.cursor = "crosshair";
+
+    this.onMouseDrag = function (event) {
+        var BBox = anchorPtPathItem.owningBBox;
+        BBox.editByMovingAnchorPoint(anchorPtPathItem.anchorIndex, event.delta);
+        var tempPath = BBox.dispElement.createTempEditedShape(BBox.rect());
+        tempPath.removeOnDrag();
+        tempPath.removeOnUp();
+    }
+
+    this.onMouseUp = function (event) {
+        rnController.setActiveCommand(new skSelectGeomCommand());
+    }
+
+}
+
+skEditGeomCommand.prototype = new skCommand();

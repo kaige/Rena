@@ -173,6 +173,19 @@ function skDispOval(oval) {
 
     this._pathItem = new Path.Oval(rect, b);
     this.init();
+
+    this.createTempEditedShape = function (rect) {
+        var tempPathItem = new Path.Oval(rect, b);
+        tempPathItem.style = {
+                fillColor: '#C5E6EA',
+                strokeColor: '#385D8A',
+                strokeWidth: 1,
+                opacity: 0.5
+        };
+
+        return tempPathItem;
+
+    }
 }
 
 skDispOval.prototype = new skDispElement();
@@ -186,6 +199,7 @@ skDispOval.prototype = new skDispElement();
 function skBoundingBox(displayElement) {
     this.dispElement = displayElement;      // add a property for bounding box
     this._items = [];
+    this._anchorPts = [];
     var sz = 8;
     var r = sz / 2;
 
@@ -193,22 +207,20 @@ function skBoundingBox(displayElement) {
     var skelement = displayElement.skElement();
 
     if (skelement.geomType() === kLineSegment) {
-        this._startPt = new Path.Circle(pathItem.firstSegment.point, r);
-        this._startPt.owningBBox = this;
+        this._anchorPts[0] = pathItem.firstSegment.point;
+        this._anchorPts[1] = pathItem.lastSegment.point;
 
-        this._endPt = new Path.Circle(pathItem.lastSegment.point, r);
-        this._endPt.owningBBox = this;
-
-        this._items.push(this._startPt);
-        this._items.push(this._endPt);
-        
         var i;
-        for (i = 0; i < this._items.length; i++) {
-            this._items[i].style = {
+        for (i = 0; i < this._anchorPts.length; i++) {
+            var pathItem = new Path.Circle(this._anchorPts[i], r);
+            pathItem.owningBBox = this;
+            pathItem.anchorIndex = i;
+            pathItem.style = {
                 fillColor: '#C5E6EA',
                 strokeColor: '#385D8A',
                 strokeWidth: 1
-            }; 
+            };
+            this._items.push(pathItem);
         }
     }
     else {
@@ -229,66 +241,54 @@ function skBoundingBox(displayElement) {
         var handleStart = topmid;
         var handleEnd = handleStart.add(0, -handleLength);
 
-        // create paths
+        this._anchorPts[0] = tl;
+        this._anchorPts[1] = leftmid;
+        this._anchorPts[2] = ll;
+        this._anchorPts[3] = lowmid;
+        this._anchorPts[4] = lr;
+        this._anchorPts[5] = rightmid;
+        this._anchorPts[6] = tr;
+        this._anchorPts[7] = topmid;
+
+        // create edges
         //
-        this._leftEdge = new Path.Line(tl, ll);
-        this._lowEdge = new Path.Line(ll, lr);
-        this._rightEdge = new Path.Line(lr, tr);
-        this._topEdge = new Path.Line(tr, tl);
+        var i;
+        for (i = 0; i < this._anchorPts.length; i += 2) {
+            var startPtIndex = i;
+            var endPtIndex = (i + 2) % this._anchorPts.length;
+            var pathItem = new Path.Line(this._anchorPts[startPtIndex], this._anchorPts[endPtIndex]);
+            this._items.push(pathItem);
+
+        }
         this._handleEdge = new Path.Line(handleStart, handleEnd);
+        this._items.push(this._handleEdge);
 
-        this._tlCorner = new Path.Circle(tl, r);
-        this._tlCorner.owningBBox = this;       // add a property for path item
-        this._tlCorner.isA = "tlCorner";
-
-        this._trCorner = new Path.Circle(tr, r);
-        this._trCorner.owningBBox = this;
-        this._trCorner.isA = "trCorner";
-
-        this._llCorner = new Path.Circle(ll, r);
-        this._llCorner.owningBBox = this;
-        this._llCorner.isA = "llCorner";
-
-        this._lrCorner = new Path.Circle(lr, r);
-        this._lrCorner.owningBBox = this;
-        this._lrCorner.isA = "lrCorner";
+        // create corner points
+        //
+        for (i = 0; i < this._anchorPts.length; i += 2) {
+            var pathItem = new Path.Circle(this._anchorPts[i], r);
+            pathItem.owningBBox = this;
+            pathItem.anchorIndex = i;
+            this._items.push(pathItem);
+        }
 
         this._handleEnd = new Path.Circle(handleEnd, r);
         this._handleEnd.owningBBox = this;
         this._handleEnd.isA = "handleEnd";
-
-        this._leftMid = new Path.Rectangle(leftmid.x - r, leftmid.y - r, sz, sz);
-        this._leftMid.owningBBox = this;
-        this._leftMid.isA = "leftMid";
-
-        this._lowMid = new Path.Rectangle(lowmid.x - r, lowmid.y - r, sz, sz);
-        this._lowMid.owningBBox = this;
-        this._lowMid.isA = "lowMid";
-
-        this._rightMid = new Path.Rectangle(rightmid.x - r, rightmid.y - r, sz, sz);
-        this._rightMid.owningBBox = this;
-        this._rightMid.isA = "rightMid";
-
-        this._topMid = new Path.Rectangle(topmid.x - r, topmid.y - r, sz, sz);
-        this._topMid.owningBBox = this;
-        this._topMid.isA = "topMid";
-
-        this._items.push(this._leftEdge);
-        this._items.push(this._lowEdge);
-        this._items.push(this._rightEdge);
-        this._items.push(this._topEdge);
-        this._items.push(this._handleEdge);
-        this._items.push(this._tlCorner);
-        this._items.push(this._trCorner);
-        this._items.push(this._llCorner);
-        this._items.push(this._lrCorner);
         this._items.push(this._handleEnd);
-        this._items.push(this._leftMid);
-        this._items.push(this._lowMid);
-        this._items.push(this._rightMid);
-        this._items.push(this._topMid);
 
-        var i;
+        // create mid points
+        //
+        for (i = 1; i < this._anchorPts.length; i += 2) {
+            var pt = this._anchorPts[i];
+            var pathItem = new Path.Rectangle(pt.x - r, pt.y - r, sz, sz);
+            pathItem.owningBBox = this;
+            pathItem.anchorIndex = i;
+            this._items.push(pathItem);
+        }
+
+        // assign drawing style
+        //
         for (i = 0; i < this._items.length; i++) {
             this._items[i].style = {
                 fillColor: '#C5E6EA',
@@ -298,6 +298,59 @@ function skBoundingBox(displayElement) {
         }
 
         this._handleEnd.fillColor = '#8BE73D';
+    }
+
+    this.getAnchorPointVector = function (anchorPtIndex) {
+        var vec;
+        if (this.isCornerAnchorPt(anchorPtIndex)) { 
+            vec = this.getCornerPointVector(anchorPtIndex);
+        }
+        else if (this.isEdgeAnchorPt(anchorPtIndex)) { 
+            vec = this.getEdgePointVector(anchorPtIndex);
+        }
+        return vec;
+    }
+
+    this.isCornerAnchorPt = function (anchorPtIndex) {
+        return (anchorPtIndex % 2 === 0) ? true : false;
+    }
+
+    this.isEdgeAnchorPt = function (anchorPtIndex) {
+        return (anchorPtIndex % 2 !== 0) ? true : false;
+    }
+
+    this.modOffset = function (index, offset, length) {
+        var i = (index - offset) % length;
+        if (i < 0)
+            i += length;
+        return i;
+    }
+
+    this.getCornerPointVector = function (anchorPtIndex) {
+        var self = anchorPtIndex;
+        var pre = this.modOffset(self, -2, this._anchorPts.length);
+        var next = this.modOffset(self, 2, this._anchorPts.length);
+        var cornerPt = this._anchorPts[self];
+        var neighborPt1 = this._anchorPts[pre];
+        var neighborPt2 = this._anchorPts[next];
+
+        var vec1 = neighborPt1.subtract(cornerPt).normalize();
+        var vec2 = neighborPt2.subtract(cornerPt).normalize();
+        var pt1 = cornerPt.add(vec1);
+        var pt2 = cornerPt.add(vec2);
+        var mid = pt1.add(pt2).multiply(0.5);
+        var vec = cornerPt.subtract(mid).normalize();
+        return vec;
+    }
+
+    this.getEdgePointVector = function (anchorPtIndex) {
+        var self = anchorPtIndex;
+        var opposite = this.modOffset(self, 4, this._anchorPts.length);
+        var edgePt = this._anchorPts[self];
+        var oppEdgePt = this._anchorPts[opposite];
+
+        var vec = edgePt.subtract(oppEdgePt).normalize();
+        return vec;
     }
 
     this.setVisible = function (b) {
@@ -312,6 +365,37 @@ function skBoundingBox(displayElement) {
         for (i = 0; i < this._items.length; i++) {
             this._items[i].translate(delta);
         }
+    }
+
+    this.rect = function () {
+        return new Rectangle(this._anchorPts[0], this._anchorPts[4]);
+    }
+
+    this.editByMovingAnchorPoint = function (anchorPtIndex, delta) {
+        if (this.isCornerAnchorPt(anchorPtIndex)) {
+            this.editByMovingCornerAnchorPoint(anchorPtIndex, delta);
+        }
+        else if (this.isEdgeAnchorPt(anchorPtIndex)) {
+            this.editByMovingEdgeAnchorPoint(anchorPtIndex, delta);
+        }
+    }
+
+    this.editByMovingEdgeAnchorPoint = function (midAnchorIndex, delta) {
+        var oppositeEdgePtIndex = this.modOffset(midAnchorIndex, 4, this._anchorPts.length);
+        var n = this._anchorPts[midAnchorIndex].subtract(this._anchorPts[oppositeEdgePtIndex]).normalize();
+        var moveVec = n.multiply(n.dot(delta));
+
+        var neighborCorner1Index = this.modOffset(midAnchorIndex, 1, this._anchorPts.length);
+        var neighborCorner2Index = this.modOffset(midAnchorIndex, -1, this._anchorPts.length);
+        this._anchorPts[neighborCorner1Index] = this._anchorPts[neighborCorner1Index].add(moveVec);
+        this._anchorPts[neighborCorner2Index] = this._anchorPts[neighborCorner2Index].add(moveVec);
+    }
+
+    this.editByMovingCornerAnchorPoint = function (cornerAnchorIndex, delta) {
+        var edgeNeighbor1Index = this.modOffset(cornerAnchorIndex, 1, this._anchorPts.length);
+        var edgeNeighbor2Index = this.modOffset(cornerAnchorIndex, -1, this._anchorPts.length);
+        this.editByMovingEdgeAnchorPoint(edgeNeighbor1Index, delta);
+        this.editByMovingEdgeAnchorPoint(edgeNeighbor2Index, delta);
     }
 }
 

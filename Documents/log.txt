@@ -1,0 +1,15 @@
+to do
+=======
+
+1. find a cursor style for rotating geometry
+
+2. update cursor style immediately after we new a skEditGeomCommand()
+
+3. there're some exceptions when loading the page, we should eliminate them.
+
+
+
+
+
+done
+======
