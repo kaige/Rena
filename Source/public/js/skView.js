@@ -302,7 +302,8 @@ function skSelectGeomCommand() {
         rnController.deselectAll();
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult) {
-            hitResult.item.dispElement.setIsSelected(true);
+            if (hitResult.item.dispElement)
+                hitResult.item.dispElement.setIsSelected(true);
         }
         view.draw();
     }
@@ -327,15 +328,113 @@ function skSelectGeomCommand() {
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult) {
-            // if no dispElement is selected, simply change the mouse cursor type to "move"
-            //
-            rnGraphicsManager.drawingCanvas().style.cursor = "move";
-            // if a dispElement is selected and we are on an edge point or a corner point, change to "resize"
-            //
-            
+            if (hitResult.item.owningBBox) {
+                if (hitResult.item.owningBBox.dispElement.skElement().geomType() == kLineSegment) {
+                    this.setLineEndPointCursorStyle(hitResult.item);
+                }
+                else {
+                    this.setBBoxAnchorPointCursorStyle(hitResult.item);
+                }
+            }
+            else {
+                rnGraphicsManager.drawingCanvas().style.cursor = "move";
+            }
         }
-        else 
+        else {
             rnGraphicsManager.drawingCanvas().style.cursor = "default";
+        }
+    }
+
+    this.setLineEndPointCursorStyle = function (pathItem) {
+        var pt1 = pathItem.owningBBox._startPt.position;
+        var pt2 = pathItem.owningBBox._endPt.position;
+        var vec = pt1.subtract(pt2);
+        var mul = vec.x * vec.y;
+        if (mul > 0)        // note the canvas coordinate system is y-flip with normal orthogonal system
+            rnGraphicsManager.drawingCanvas().style.cursor = "se-resize";
+        else
+            rnGraphicsManager.drawingCanvas().style.cursor = "ne-resize";
+    }
+
+    this.setBBoxAnchorPointCursorStyle = function (pathItem) {
+        var vec;
+        var BBox = pathItem.owningBBox;
+
+        // handle point
+        //
+        if (pathItem.isA == "handleEnd") {
+            rnGraphicsManager.drawingCanvas().style.cursor = "crosshair";
+            return;
+        }
+
+        // corner point
+        //
+        if (pathItem.isA == "tlCorner") {
+            vec = this.getCornerPointVector(pathItem.position, BBox._llCorner.position, BBox._trCorner.position);
+        }
+        else if (pathItem.isA == "trCorner") {
+            vec = this.getCornerPointVector(pathItem.position, BBox._tlCorner.position, BBox._lrCorner.position);
+        }
+        else if (pathItem.isA == "llCorner") {
+            vec = this.getCornerPointVector(pathItem.position, BBox._tlCorner.position, BBox._lrCorner.position);
+        }
+        else if (pathItem.isA == "lrCorner") {
+            vec = this.getCornerPointVector(pathItem.position, BBox._llCorner.position, BBox._trCorner.position);
+        }
+
+        // edge point
+        //
+        else if (pathItem.isA == "topMid") {
+            vec = this.getEdgePointVector(pathItem.position, BBox._lowMid.position);
+        }
+        else if (pathItem.isA == "lowMid") {
+            vec = this.getEdgePointVector(pathItem.position, BBox._topMid.position);
+        }
+        else if (pathItem.isA == "leftMid") {
+            vec = this.getEdgePointVector(pathItem.position, BBox._rightMid.position);
+        }
+        else if (pathItem.isA == "rightMid") {
+            vec = this.getEdgePointVector(pathItem.position, BBox._leftMid.position);
+        }
+
+        this.setCursorStyle(vec);
+    }
+
+    this.getCornerPointVector = function (corner, neighbor1, neighbor2) {
+        var vec1 = neighbor1.subtract(corner).normalize();
+        var vec2 = neighbor2.subtract(corner).normalize();
+        var pt1 = corner.add(vec1);
+        var pt2 = corner.add(vec2);
+        var mid = pt1.add(pt2).multiply(0.5);
+        var vec = corner.subtract(mid).normalize();
+        return vec;
+    }
+
+    this.getEdgePointVector = function (pt, oppositePt) {
+        var vec = pt.subtract(oppositePt).normalize();
+        return vec;
+    }
+
+    this.setCursorStyle = function (vec) {
+        // flip vectors of 2nd/3rd quadrant to 1st/4th quadrant
+        //
+        if (vec.x < 0) {
+            vec.set(-vec.x, -vec.y);
+        }
+
+        // determine cursor style
+        //
+        if (vec.x < 0.382683) {     //sin(22.5 deg) == 0.382683
+            rnGraphicsManager.drawingCanvas().style.cursor = "n-resize";
+        }
+        else if (vec.x > 0.92388) {     //cos(22.5 deg) == 0.92388
+            rnGraphicsManager.drawingCanvas().style.cursor = "e-resize";
+        }
+        else if (vec.y > 0) {
+            rnGraphicsManager.drawingCanvas().style.cursor = "se-resize";
+        }
+        else
+            rnGraphicsManager.drawingCanvas().style.cursor = "ne-resize";
     }
 }
 

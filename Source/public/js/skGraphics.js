@@ -125,7 +125,7 @@ function skDispElement(element) {
             pathItem.strokeColor = skelement.strokeColor();
             pathItem.fillColor = skelement.fillColor();
             pathItem.strokeWidth = skelement.strokeWidth();
-            pathItem.dispElement = this;        // add a property to Paper.js's pathItem object
+            pathItem.dispElement = this;        // add a property to pathItem
         }
 
         skelement.addListener(this);
@@ -183,19 +183,24 @@ skDispOval.prototype = new skDispElement();
 //
 //-------------------------------------------------
 
-function skBoundingBox(dispElement) {
+function skBoundingBox(displayElement) {
+    this.dispElement = displayElement;      // add a property for bounding box
     this._items = [];
     var sz = 8;
     var r = sz / 2;
 
-    var pathItem = dispElement.pathItem();
-    var skelement = dispElement.skElement();
+    var pathItem = displayElement.pathItem();
+    var skelement = displayElement.skElement();
 
     if (skelement.geomType() === kLineSegment) {
         this._startPt = new Path.Circle(pathItem.firstSegment.point, r);
+        this._startPt.owningBBox = this;
+
         this._endPt = new Path.Circle(pathItem.lastSegment.point, r);
-        this._items.push(startPt);
-        this._items.push(endPt);
+        this._endPt.owningBBox = this;
+
+        this._items.push(this._startPt);
+        this._items.push(this._endPt);
         
         var i;
         for (i = 0; i < this._items.length; i++) {
@@ -221,8 +226,8 @@ function skBoundingBox(dispElement) {
         var topmid = tl.add(rect.width / 2, 0);
 
         var handleLength = 20;
-        var handledown = topmid;
-        var handleup = handledown.add(0, -handleLength);
+        var handleStart = topmid;
+        var handleEnd = handleStart.add(0, -handleLength);
 
         // create paths
         //
@@ -230,33 +235,58 @@ function skBoundingBox(dispElement) {
         this._lowEdge = new Path.Line(ll, lr);
         this._rightEdge = new Path.Line(lr, tr);
         this._topEdge = new Path.Line(tr, tl);
-        this._handleEdge = new Path.Line(handledown, handleup);
+        this._handleEdge = new Path.Line(handleStart, handleEnd);
 
         this._tlCorner = new Path.Circle(tl, r);
+        this._tlCorner.owningBBox = this;       // add a property for path item
+        this._tlCorner.isA = "tlCorner";
+
         this._trCorner = new Path.Circle(tr, r);
+        this._trCorner.owningBBox = this;
+        this._trCorner.isA = "trCorner";
+
         this._llCorner = new Path.Circle(ll, r);
+        this._llCorner.owningBBox = this;
+        this._llCorner.isA = "llCorner";
+
         this._lrCorner = new Path.Circle(lr, r);
-        this._handleUp = new Path.Circle(handleup, r);
+        this._lrCorner.owningBBox = this;
+        this._lrCorner.isA = "lrCorner";
+
+        this._handleEnd = new Path.Circle(handleEnd, r);
+        this._handleEnd.owningBBox = this;
+        this._handleEnd.isA = "handleEnd";
 
         this._leftMid = new Path.Rectangle(leftmid.x - r, leftmid.y - r, sz, sz);
-        this._lowMid = new Path.Rectangle(lowmid.x - r, lowmid.y - r, sz, sz);
-        this._rightMid = new Path.Rectangle(rightmid.x - r, rightmid.y - r, sz, sz);
-        this._topMid = new Path.Rectangle(topmid.x - r, topmid.y - r, sz, sz);
+        this._leftMid.owningBBox = this;
+        this._leftMid.isA = "leftMid";
 
-        this._items.push(leftEdge);
-        this._items.push(lowEdge);
-        this._items.push(rightEdge);
-        this._items.push(topEdge);
-        this._items.push(handleEdge);
-        this._items.push(tlCorner);
-        this._items.push(trCorner);
-        this._items.push(llCorner);
-        this._items.push(lrCorner);
-        this._items.push(handleUp);
-        this._items.push(leftMid);
-        this._items.push(lowMid);
-        this._items.push(rightMid);
-        this._items.push(topMid);
+        this._lowMid = new Path.Rectangle(lowmid.x - r, lowmid.y - r, sz, sz);
+        this._lowMid.owningBBox = this;
+        this._lowMid.isA = "lowMid";
+
+        this._rightMid = new Path.Rectangle(rightmid.x - r, rightmid.y - r, sz, sz);
+        this._rightMid.owningBBox = this;
+        this._rightMid.isA = "rightMid";
+
+        this._topMid = new Path.Rectangle(topmid.x - r, topmid.y - r, sz, sz);
+        this._topMid.owningBBox = this;
+        this._topMid.isA = "topMid";
+
+        this._items.push(this._leftEdge);
+        this._items.push(this._lowEdge);
+        this._items.push(this._rightEdge);
+        this._items.push(this._topEdge);
+        this._items.push(this._handleEdge);
+        this._items.push(this._tlCorner);
+        this._items.push(this._trCorner);
+        this._items.push(this._llCorner);
+        this._items.push(this._lrCorner);
+        this._items.push(this._handleEnd);
+        this._items.push(this._leftMid);
+        this._items.push(this._lowMid);
+        this._items.push(this._rightMid);
+        this._items.push(this._topMid);
 
         var i;
         for (i = 0; i < this._items.length; i++) {
@@ -267,7 +297,7 @@ function skBoundingBox(dispElement) {
             };
         }
 
-        handleUp.fillColor = '#8BE73D';
+        this._handleEnd.fillColor = '#8BE73D';
     }
 
     this.setVisible = function (b) {
