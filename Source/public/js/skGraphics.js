@@ -139,6 +139,14 @@ function skDispElement(element) {
                 this._boundingBox.translate(delta);
         }
     }
+
+    this.setPathItem = function (newPathItem) {
+        if (this._pathItem)
+            this._pathItem.remove();
+
+        this._pathItem = newPathItem;
+        newPathItem.dispElement = this;
+    }
 }
 
 //-------------------------------------------------
@@ -174,7 +182,7 @@ function skDispOval(oval) {
     this._pathItem = new Path.Oval(rect, b);
     this.init();
 
-    this.createTempEditedShape = function (rect) {
+    this.copy = function (rect) {
         var tempPathItem = new Path.Oval(rect, b);
         tempPathItem.style = {
                 fillColor: '#C5E6EA',
@@ -206,49 +214,19 @@ function skBoundingBox(displayElement) {
     var pathItem = displayElement.pathItem();
     var skelement = displayElement.skElement();
 
-    if (skelement.geomType() === kLineSegment) {
-        this._anchorPts[0] = pathItem.firstSegment.point;
-        this._anchorPts[1] = pathItem.lastSegment.point;
-
-        var i;
-        for (i = 0; i < this._anchorPts.length; i++) {
-            var pathItem = new Path.Circle(this._anchorPts[i], r);
-            pathItem.owningBBox = this;
-            pathItem.anchorIndex = i;
-            pathItem.style = {
-                fillColor: '#C5E6EA',
-                strokeColor: '#385D8A',
-                strokeWidth: 1
-            };
-            this._items.push(pathItem);
-        }
-    }
-    else {
-        // calculate point positions
+    this.createPathItems = function () {
+        // create the mid points
         //
-        var rect = pathItem.bounds;
-        var tl = rect.point;
-        var tr = tl.add(rect.width, 0);
-        var ll = tl.add(0, rect.height);
-        var lr = tl.add(rect.width, rect.height);
+        this._anchorPts[1] = this._anchorPts[0].add(this._anchorPts[2]).multiply(0.5);
+        this._anchorPts[3] = this._anchorPts[2].add(this._anchorPts[4]).multiply(0.5);
+        this._anchorPts[5] = this._anchorPts[4].add(this._anchorPts[6]).multiply(0.5);
+        this._anchorPts[7] = this._anchorPts[6].add(this._anchorPts[0]).multiply(0.5);
 
-        var leftmid = tl.add(0, rect.height / 2);
-        var lowmid = ll.add(rect.width / 2, 0);
-        var rightmid = tr.add(0, rect.height / 2);
-        var topmid = tl.add(rect.width / 2, 0);
-
+        var tl = this._anchorPts[0];
+        var tr = this._anchorPts[6];
         var handleLength = 20;
-        var handleStart = topmid;
+        var handleStart = tl.add(tr).multiply(0.5);
         var handleEnd = handleStart.add(0, -handleLength);
-
-        this._anchorPts[0] = tl;
-        this._anchorPts[1] = leftmid;
-        this._anchorPts[2] = ll;
-        this._anchorPts[3] = lowmid;
-        this._anchorPts[4] = lr;
-        this._anchorPts[5] = rightmid;
-        this._anchorPts[6] = tr;
-        this._anchorPts[7] = topmid;
 
         // create edges
         //
@@ -298,6 +276,52 @@ function skBoundingBox(displayElement) {
         }
 
         this._handleEnd.fillColor = '#8BE73D';
+    }
+
+    if (skelement.geomType() === kLineSegment) {
+        this._anchorPts[0] = pathItem.firstSegment.point;
+        this._anchorPts[1] = pathItem.lastSegment.point;
+
+        var i;
+        for (i = 0; i < this._anchorPts.length; i++) {
+            var pathItem = new Path.Circle(this._anchorPts[i], r);
+            pathItem.owningBBox = this;
+            pathItem.anchorIndex = i;
+            pathItem.style = {
+                fillColor: '#C5E6EA',
+                strokeColor: '#385D8A',
+                strokeWidth: 1
+            };
+            this._items.push(pathItem);
+        }
+    }
+    else {
+        // calculate point positions
+        //
+        var rect = pathItem.bounds;
+        var tl = rect.point;
+        var tr = tl.add(rect.width, 0);
+        var ll = tl.add(0, rect.height);
+        var lr = tl.add(rect.width, rect.height);
+
+        this._anchorPts[0] = tl;
+        this._anchorPts[2] = ll;
+        this._anchorPts[4] = lr;
+        this._anchorPts[6] = tr;
+
+        this.createPathItems();
+    }
+
+    this.updatePathItems = function () {
+        this.clearPathItems();
+        this.createPathItems();
+    }
+
+    this.clearPathItems =  function() {
+        var i;
+        for (i = 0; i <this._items.length; i++) {
+            this._items[i].remove();
+        }
     }
 
     this.getAnchorPointVector = function (anchorPtIndex) {

@@ -413,13 +413,18 @@ function skEditGeomCommand(anchorPtPathItem) {
     this.onMouseDrag = function (event) {
         var BBox = anchorPtPathItem.owningBBox;
         BBox.editByMovingAnchorPoint(anchorPtPathItem.anchorIndex, event.delta);
-        var tempPath = BBox.dispElement.createTempEditedShape(BBox.rect());
+        var tempPath = BBox.dispElement.copy(BBox.rect());
         tempPath.removeOnDrag();
         tempPath.removeOnUp();
     }
 
     this.onMouseUp = function (event) {
+        var BBox = anchorPtPathItem.owningBBox;
+        var newPath = BBox.dispElement.copy(BBox.rect());
+        BBox.dispElement.setPathItem(newPath);
+        BBox.updatePathItems();        
         rnController.setActiveCommand(new skSelectGeomCommand());
+        BBox.dispElement.setIsSelected(true);
     }
 
 }
