@@ -185,14 +185,11 @@ function skDispOval(oval) {
     this.copy = function (rect) {
         var tempPathItem = new Path.Oval(rect, b);
         tempPathItem.style = {
-                fillColor: '#C5E6EA',
-                strokeColor: '#385D8A',
-                strokeWidth: 1,
-                opacity: 0.5
+                fillColor: this._skElement.fillColor(),
+                strokeColor: this._skElement.strokeColor(),
+                strokeWidth: this._skElement.strokeWidth()
         };
-
         return tempPathItem;
-
     }
 }
 
@@ -312,7 +309,7 @@ function skBoundingBox(displayElement) {
         this.createPathItems();
     }
 
-    this.updatePathItems = function () {
+    this.regeneratePathItems = function () {
         this.clearPathItems();
         this.createPathItems();
     }

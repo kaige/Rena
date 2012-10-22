@@ -299,11 +299,12 @@ function skSelectGeomCommand() {
     };
 
     this.onMouseDown = function (event) {
-        rnController.deselectAll();
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult.item.dispElement) {
-            if (!hitResult.item.dispElement.isSelected())
+            if (!hitResult.item.dispElement.isSelected()) {
+                rnController.deselectAll();
                 hitResult.item.dispElement.setIsSelected(true);
+            }
         }
         else if (hitResult.item.owningBBox) {
             rnController.setActiveCommand(new skEditGeomCommand(hitResult.item));
@@ -414,6 +415,7 @@ function skEditGeomCommand(anchorPtPathItem) {
         var BBox = anchorPtPathItem.owningBBox;
         BBox.editByMovingAnchorPoint(anchorPtPathItem.anchorIndex, event.delta);
         var tempPath = BBox.dispElement.copy(BBox.rect());
+        tempPath.opacity = 0.5;
         tempPath.removeOnDrag();
         tempPath.removeOnUp();
     }
@@ -421,9 +423,9 @@ function skEditGeomCommand(anchorPtPathItem) {
     this.onMouseUp = function (event) {
         var BBox = anchorPtPathItem.owningBBox;
         var newPath = BBox.dispElement.copy(BBox.rect());
-        BBox.dispElement.setPathItem(newPath);
-        BBox.updatePathItems();        
+        BBox.dispElement.setPathItem(newPath);     
         rnController.setActiveCommand(new skSelectGeomCommand());
+        BBox.regeneratePathItems();
         BBox.dispElement.setIsSelected(true);
     }
 
