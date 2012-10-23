@@ -72,11 +72,6 @@ function skElement() {
 	    var i = this._listeners.indexOf(listener);
 	    this._listeners.splice(i, 1);
 	}
-
-	this.moveMathPoint = function (mPt, dx, dy) {
-	    mPt.setX(mPt.x() + dx);
-	    mPt.setY(mPt.y() + dy);
-	}
 }
 
 
@@ -113,8 +108,9 @@ function skLineSegment (lineSegment) {
 	this.move = function (dx, dy) {
 	    var pt1 = this._geom.startPt();
 	    var pt2 = this._geom.endPt();
-	    this.moveMathPoint(pt1, dx, dy);
-	    this.moveMathPoint(pt2, dx, dy);
+	    var vec = new skMVector(dx, dy);
+	    pt1.add(vec);
+	    pt2.add(vec);
 	}
 }
 
@@ -138,8 +134,9 @@ function skRectangle (rectangle) {
 	this.move = function (dx, dy) {
 	    var pt1 = this._geom.topLeft();
 	    var pt2 = this._geom.bottomRight();
-	    this.moveMathPoint(pt1, dx, dy);
-	    this.moveMathPoint(pt2, dx, dy);
+	    var vec = new skMVector(dx, dy);
+	    pt1.add(vec);
+	    pt2.add(vec);
 	}
 }
 
@@ -163,8 +160,9 @@ function skOval (oval) {
 	this.move = function (dx, dy) {
 	    var pt1 = this._geom.rect().topLeft();
 	    var pt2 = this._geom.rect().bottomRight();
-	    this.moveMathPoint(pt1, dx, dy);
-	    this.moveMathPoint(pt2, dx, dy);
+	    var vec = new skMVector(dx, dy);
+	    pt1.add(vec);
+	    pt2.add(vec);
 	}
 }
 
@@ -187,7 +185,8 @@ function skCircle (circle) {
 
 	this.move = function (dx, dy) {
 	    var pt1 = this._geom.center();
-	    this.moveMathPoint(pt1, dx, dy);
+	    var vec = new skMVector(dx, dy);
+	    pt1.add(vec);
 	}
 }
 

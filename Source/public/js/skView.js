@@ -307,7 +307,7 @@ function skSelectGeomCommand() {
             }
         }
         else if (hitResult.item.owningBBox) {
-            rnController.setActiveCommand(new skEditGeomCommand(hitResult.item));
+            rnController.setActiveCommand(new skResizeGeomCommand(hitResult.item));
         }
 
         view.draw();
@@ -405,7 +405,7 @@ skSelectGeomCommand.prototype = new skCommand();
 //
 //-------------------------------------------------
 
-function skEditGeomCommand(anchorPtPathItem) {
+function skResizeGeomCommand(anchorPtPathItem) {
     skCommand.call(this);
 
     var canvas = rnGraphicsManager.drawingCanvas();
@@ -414,21 +414,20 @@ function skEditGeomCommand(anchorPtPathItem) {
     this.onMouseDrag = function (event) {
         var BBox = anchorPtPathItem.owningBBox;
         BBox.editByMovingAnchorPoint(anchorPtPathItem.anchorIndex, event.delta);
-        var tempPath = BBox.dispElement.copy(BBox.rect());
+        var tempPath = BBox.dispElement.clonePathItem(BBox.rect());
         tempPath.opacity = 0.5;
         tempPath.removeOnDrag();
         tempPath.removeOnUp();
     }
 
     this.onMouseUp = function (event) {
-        var BBox = anchorPtPathItem.owningBBox;
-        var newPath = BBox.dispElement.copy(BBox.rect());
-        BBox.dispElement.setPathItem(newPath);     
-        rnController.setActiveCommand(new skSelectGeomCommand());
+        var BBox = anchorPtPathItem.owningBBox;          
         BBox.regeneratePathItems();
+        BBox.dispElement.updatePathItem(BBox.rect());
         BBox.dispElement.setIsSelected(true);
+        rnController.setActiveCommand(new skSelectGeomCommand());
     }
 
 }
 
-skEditGeomCommand.prototype = new skCommand();
+skResizeGeomCommand.prototype = new skCommand();

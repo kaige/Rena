@@ -1,5 +1,32 @@
 //-------------------------------------------------
 //
+//	math vector type
+//
+//-------------------------------------------------
+
+function skMVector(x, y) {
+    this._x = x;
+	this._y = y;
+	
+	this.x = function() {
+		return this._x;
+	}
+	
+	this.y = function() {
+		return this._y;
+	}
+	
+	this.setX = function(xval) {
+		this._x = xval;
+	}
+	
+	this.setY = function(yval) {
+		this._y = yval;
+	}
+}
+
+//-------------------------------------------------
+//
 //	math point type
 //
 //-------------------------------------------------
@@ -22,6 +49,11 @@ function skMPoint(x, y) {
 	
 	this.setY = function(yval) {
 		this._y = yval;
+	}
+	
+	this.add = function(vec) {
+	    this._x += vec.x();
+	    this._y += vec.y();
 	}
 }
 
@@ -50,6 +82,7 @@ function skMLineSegment(pt1, pt2) {
 	this.setEndPt = function(pt) {
 		this._endPt = pt;
 	}
+	
 }
 
 //-------------------------------------------------
@@ -77,6 +110,7 @@ function skMRectangle(pt1, pt2) {
 	this.setBottomRight = function(pt) {
 		this._bottomRight = pt;
 	}
+	
 }
 
 //-------------------------------------------------
@@ -104,6 +138,7 @@ function skMOval(rect, circumscribed) {
 	this.setCircum = function(b) {
 		this._circum = b;
 	}
+	
 }
 
 //-------------------------------------------------
@@ -131,4 +166,5 @@ function skMCircle(pt, r) {
 	this.setRadius = function(r) {
 		this._radius = r;
 	}
+	
 }
