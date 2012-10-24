@@ -77,7 +77,7 @@ var skConv = new (function () {
     }
 
     this.toMathRect = function (rect) {
-        return new skMRectangle(rect.topLeft, rect.bottomRight);
+        return new skMRectangle(this.toMathPoint(rect.topLeft), this.toMathPoint(rect.bottomRight));
     }
 });
 
@@ -93,6 +93,7 @@ function skDispElement(element) {
     this._skElement = element;
     this._pathItem = null;
     this._boundingBox = null;
+    this._skElement.addListener(this);         
 
     this.skElement = function () {
         return this._skElement;
@@ -103,9 +104,6 @@ function skDispElement(element) {
     }
 
     this.boundingBox = function () {
-        if (!this._boundingBox) {
-            this._boundingBox = new skBoundingBox(this);
-        }
         return this._boundingBox;
     }
 
@@ -119,33 +117,37 @@ function skDispElement(element) {
     }
 
     this.init = function () {
-        var pathItem = this._pathItem;
-        var skelement = this._skElement;
+        var pathItem = this.createPathItem();
+        var skelement = this.skElement();
+        pathItem.dispElement = this;
         if (pathItem) {
             pathItem.strokeColor = skelement.strokeColor();
             pathItem.fillColor = skelement.fillColor();
             pathItem.strokeWidth = skelement.strokeWidth();
             pathItem.dispElement = this;        // add a property to pathItem
         }
-
-        skelement.addListener(this);
+        
+        this._pathItem = pathItem;
+        this._boundingBox = new skBoundingBox(this);        
     }
 
     this.notify = function (event) {
-        if (event.message = "geometry moved") {
-            var delta = new Point(event.dx, event.dy);
-            this._pathItem.translate(delta);
-            if (this._boundingBox)
-                this._boundingBox.translate(delta);
+        if (event.message = "geometry changed") {
+            this.regenerate();   
         }
     }
-
-    this.setPathItem = function (newPathItem) {
-        if (this._pathItem)
+    
+    this.regenerate = function () {
+        if (this._pathItem) {
             this._pathItem.remove();
-
-        this._pathItem = newPathItem;
-        newPathItem.dispElement = this;
+        }
+        
+        if (this._boundingBox) {
+            this._boundingBox.clear();
+            this._boundingBox = null;
+        }
+        
+        this.init();
     }
 }
 
@@ -157,11 +159,15 @@ function skDispElement(element) {
 
 function skDispLineSegment(lnSeg) {
     skDispElement.call(this, lnSeg);
+    
+    this.createPathItem = function () {
+        var lnSeg = this.skElement();
+        var pt1 = skConv.toPaperPoint(lnSeg.geom().startPt());
+        var pt2 = skConv.toPaperPoint(lnSeg.geom().endPt());
+        var pathItem = new Path.Line(pt1, pt2);
+        return pathItem;
+    }
 
-    var pt1 = skConv.toPaperPoint(lnSeg.geom().startPt());
-    var pt2 = skConv.toPaperPoint(lnSeg.geom().endPt());
-
-    this._pathItem = new Path.Line(pt1, pt2);
     this.init();
 }
 
@@ -175,25 +181,25 @@ skDispLineSegment.prototype = new skDispElement();
 
 function skDispOval(oval) {
     skDispElement.call(this, oval);
+    
+    this.createPathItem = function () {
+        var oval = this.skElement();
+        var rect = skConv.toPaperRect(oval.geom().rect());
+        var b = oval.geom().circum();
+        var pathItem = new Path.Oval(rect, b);
+        return pathItem;
+    }
 
-    var rect = skConv.toPaperRect(oval.geom().rect());
-    var b = oval.geom().circum();
-
-    this._pathItem = new Path.Oval(rect, b);
     this.init();
 
     this.clonePathItem = function (rect) {
-        var tempPathItem = new Path.Oval(rect, b);
+        var tempPathItem = new Path.Oval(rect, this.skElement().geom().circum());
         tempPathItem.style = {
                 fillColor: this._skElement.fillColor(),
                 strokeColor: this._skElement.strokeColor(),
                 strokeWidth: this._skElement.strokeWidth()
         };
         return tempPathItem;
-    }
-    
-    this.updatePathItem = function (rect) {
-        this.setPathItem(this.clonePathItem(rect));
     }
 }
 
@@ -313,16 +319,22 @@ function skBoundingBox(displayElement) {
     
     this.createPathItems();
 
-    this.regeneratePathItems = function () {
-        this.clearPathItems();
-        this.createPathItems();
-    }
-
-    this.clearPathItems =  function() {
+    this.clear =  function() {
         var i;
         for (i = 0; i <this._items.length; i++) {
             this._items[i].remove();
         }
+    }
+    
+    this.setVisible = function (b) {
+        var i;
+        for (i = 0; i < this._items.length; i++) {
+            this._items[i].visible = b;
+        }
+    }
+
+    this.rect = function () {
+        return new Rectangle(this._anchorPts[0], this._anchorPts[4]);
     }
 
     this.getAnchorPointVector = function (anchorPtIndex) {
@@ -376,24 +388,6 @@ function skBoundingBox(displayElement) {
 
         var vec = edgePt.subtract(oppEdgePt).normalize();
         return vec;
-    }
-
-    this.setVisible = function (b) {
-        var i;
-        for (i = 0; i < this._items.length; i++) {
-            this._items[i].visible = b;
-        }
-    }
-
-    this.translate = function (delta) {
-        var i;
-        for (i = 0; i < this._items.length; i++) {
-            this._items[i].translate(delta);
-        }
-    }
-
-    this.rect = function () {
-        return new Rectangle(this._anchorPts[0], this._anchorPts[4]);
     }
 
     this.editByMovingAnchorPoint = function (anchorPtIndex, delta) {

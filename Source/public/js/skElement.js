@@ -21,6 +21,8 @@ function skElement() {
 	this._geom = null;
 	this._listeners = [];
 	
+	var geomChangeEvent = {message: "geometry changed"};
+	
 	this.setStrokeWidth = function(w) {
 		this._strokeWidth = w;
 	}
@@ -55,6 +57,16 @@ function skElement() {
 	
 	this.geom = function() {
 		return this._geom;
+	}
+	
+	this.move = function (dx, dy) {
+	    this._geom.move(dx, dy);
+	    this.notify(geomChangeEvent);
+	}
+	
+	this.resize = function (rect) {
+	    this._geom.resize(rect);
+	    this.notify(geomChangeEvent);
 	}
 
 	this.notify = function (event) {
@@ -104,14 +116,6 @@ function skLineSegment (lineSegment) {
 	this.geomType = function() {
 		return kLineSegment;
 	}
-
-	this.move = function (dx, dy) {
-	    var pt1 = this._geom.startPt();
-	    var pt2 = this._geom.endPt();
-	    var vec = new skMVector(dx, dy);
-	    pt1.add(vec);
-	    pt2.add(vec);
-	}
 }
 
 skLineSegment.prototype = new skElement();			// inherit methods
@@ -129,14 +133,6 @@ function skRectangle (rectangle) {
 	
 	this.geomType = function() {
 		return kRectangle;
-	}
-
-	this.move = function (dx, dy) {
-	    var pt1 = this._geom.topLeft();
-	    var pt2 = this._geom.bottomRight();
-	    var vec = new skMVector(dx, dy);
-	    pt1.add(vec);
-	    pt2.add(vec);
 	}
 }
 
@@ -156,14 +152,6 @@ function skOval (oval) {
 	this.geomType = function() {
 		return kOval;
 	}
-
-	this.move = function (dx, dy) {
-	    var pt1 = this._geom.rect().topLeft();
-	    var pt2 = this._geom.rect().bottomRight();
-	    var vec = new skMVector(dx, dy);
-	    pt1.add(vec);
-	    pt2.add(vec);
-	}
 }
 
 skOval.prototype = new skElement();			// inherit methods
@@ -181,12 +169,6 @@ function skCircle (circle) {
 	
 	this.geomType = function() {
 		return kCircle;
-	}
-
-	this.move = function (dx, dy) {
-	    var pt1 = this._geom.center();
-	    var vec = new skMVector(dx, dy);
-	    pt1.add(vec);
 	}
 }
 

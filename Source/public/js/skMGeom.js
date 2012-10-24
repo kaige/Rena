@@ -51,9 +51,9 @@ function skMPoint(x, y) {
 		this._y = yval;
 	}
 	
-	this.add = function(vec) {
-	    this._x += vec.x();
-	    this._y += vec.y();
+	this.move = function(dx, dy) {
+	    this._x += dx;
+	    this._y += dy;
 	}
 }
 
@@ -83,6 +83,15 @@ function skMLineSegment(pt1, pt2) {
 		this._endPt = pt;
 	}
 	
+	this.move = function(dx, dy) {
+	    this._startPt.move(dx, dy);
+	    this._endPt.move(dx, dy);
+	}
+	
+	this.resize = function (rect) {
+	    this._startPt = rect.topLeft();
+	    this._endPt = rect.bottomRight();
+	}	
 }
 
 //-------------------------------------------------
@@ -109,6 +118,15 @@ function skMRectangle(pt1, pt2) {
 	
 	this.setBottomRight = function(pt) {
 		this._bottomRight = pt;
+	}
+	
+	this.move = function (dx, dy) {
+	    this._topLeft.move(dx, dy);
+	    this._bottomRight.move(dx, dy);
+	}
+	
+	this.resize = function (rect) {
+	    this = rect;
 	}
 	
 }
@@ -139,32 +157,11 @@ function skMOval(rect, circumscribed) {
 		this._circum = b;
 	}
 	
-}
-
-//-------------------------------------------------
-//
-//	math circle type
-//
-//-------------------------------------------------
-
-function skMCircle(pt, r) {
-	this._center = pt;
-	this._radius = r;
-	
-	this.center = function() {
-		return this._center;
+	this.move = function (dx, dy) {
+	    this._rect.move(dx, dy);
 	}
 	
-	this.radius = function() {
-		return this._radius;
-	}
-	
-	this.setCenter = function(pt) {
-		this._center = pt;
-	}
-	
-	this.setRadius = function(r) {
-		this._radius = r;
-	}
-	
+	this.resize = function (rect) {
+	    this._rect = rect;
+	}	
 }

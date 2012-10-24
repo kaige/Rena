@@ -421,11 +421,10 @@ function skResizeGeomCommand(anchorPtPathItem) {
     }
 
     this.onMouseUp = function (event) {
-        var BBox = anchorPtPathItem.owningBBox;          
-        BBox.regeneratePathItems();
-        BBox.dispElement.updatePathItem(BBox.rect());
+        var BBox = anchorPtPathItem.owningBBox;
+        BBox.dispElement.skElement().resize(skConv.toMathRect(BBox.rect())); 
+        rnController.setActiveCommand(new skSelectGeomCommand());  
         BBox.dispElement.setIsSelected(true);
-        rnController.setActiveCommand(new skSelectGeomCommand());
     }
 
 }
