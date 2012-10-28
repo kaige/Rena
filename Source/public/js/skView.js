@@ -333,13 +333,8 @@ function skSelectGeomCommand() {
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult) {
-            if (hitResult.item.owningBBox) {
-                if (hitResult.item.owningBBox.dispElement.skElement().geomType() == kLineSegment) {
-                    this.setLineEndPointCursorStyle(hitResult.item);
-                }
-                else {
-                    this.setBBoxAnchorPointCursorStyle(hitResult.item);
-                }
+            if (hitResult.item.owningBBoxElement) {
+                hitResult.item.owningBBoxElement.setCursorStyle();
             }
             else {
                 rnGraphicsManager.drawingCanvas().style.cursor = "move";
@@ -348,52 +343,6 @@ function skSelectGeomCommand() {
         else {
             rnGraphicsManager.drawingCanvas().style.cursor = "default";
         }
-    }
-
-    this.setLineEndPointCursorStyle = function (pathItem) {
-        var pt1 = pathItem.owningBBox._anchorPts[0];
-        var pt2 = pathItem.owningBBox._anchorPts[1];
-        var vec = pt1.subtract(pt2);
-        var mul = vec.x * vec.y;
-        if (mul > 0)        // note the canvas coordinate system is y-flip with normal orthogonal system
-            rnGraphicsManager.drawingCanvas().style.cursor = "se-resize";
-        else
-            rnGraphicsManager.drawingCanvas().style.cursor = "ne-resize";
-    }
-
-    this.setBBoxAnchorPointCursorStyle = function (pathItem) {
-        if (pathItem.isA == "handleEnd") {
-            rnGraphicsManager.drawingCanvas().style.cursor = "crosshair";
-        }
-        else if (pathItem.hasOwnProperty('anchorIndex')) {
-            var vec = pathItem.owningBBox.getAnchorPointVector(pathItem.anchorIndex);
-            this.setCursorStyle(vec);
-        }        
-    }
-
-
-    this.setCursorStyle = function (vec) {
-        var canvas = rnGraphicsManager.drawingCanvas();
-
-        // flip vectors in 2nd/3rd quadrant to 1st/4th quadrant
-        //
-        if (vec.x < 0) {
-            vec.set(-vec.x, -vec.y);
-        }
-
-        // determine cursor style
-        //
-        if (vec.x < 0.382683) {     //sin(22.5 deg) == 0.382683
-            canvas.style.cursor = "n-resize";
-        }
-        else if (vec.x > 0.92388) {     //cos(22.5 deg) == 0.92388
-            canvas.style.cursor = "e-resize";
-        }
-        else if (vec.y > 0) {
-            canvas.style.cursor = "se-resize";
-        }
-        else
-            canvas.style.cursor = "ne-resize";
     }
 }
 
@@ -412,8 +361,8 @@ function skResizeGeomCommand(anchorPtPathItem) {
     canvas.style.cursor = "crosshair";
 
     this.onMouseDrag = function (event) {
+        anchorPtPathItem.owningBBoxElement.move(event.delta);
         var BBox = anchorPtPathItem.owningBBox;
-        BBox.editByMovingAnchorPoint(anchorPtPathItem.anchorIndex, event.delta);
         var tempPath = BBox.dispElement.clonePathItem(BBox.rect());
         tempPath.opacity = 0.5;
         tempPath.removeOnDrag();
