@@ -19,11 +19,9 @@ function skGraphicsManager() {
 	var tool = new Tool();
 
 	tool.onKeyDown = function (event) {
-	    var command;
 	    if (Key.isDown('escape')) {
-	        command = new skSelectGeomCommand();
-	    }
-	    rnController.setActiveCommand(command);
+	        rnController.setActiveCommand(new skSelectGeomCommand());
+	    }	    
 	}
 
 	tool.onMouseDown = function (event) {
@@ -213,7 +211,7 @@ skDispOval.prototype = new skDispElement();
 function skBoundingBox(displayElement) {
     this.dispElement = displayElement;      // add a property for bounding box
     this._items = [];
-    this._anchorPts = [];
+    this._anchorPts = new skLinkedList();
 
     var pathItem = displayElement.pathItem();
     var skelement = displayElement.skElement();
@@ -223,14 +221,8 @@ function skBoundingBox(displayElement) {
     }
 
     if (skelement.geomType() === kLineSegment) {
-        this._anchorPts[0] = pathItem.firstSegment.point;
-        this._anchorPts[1] = pathItem.lastSegment.point;
-
-        var i;
-        for (i = 0; i < this._anchorPts.length; i++) {
-            var anchorPt = new skBBoxLineEndPt(this._anchorPts[i], this);
-            anchorPt.setIndex(i);
-        }
+        this._anchorPts.push(new skBBoxLineEndPt(pathItem.firstSegment.point, this));
+        this._anchorPts.push(new skBBoxLineEndPt(pathItem.lastSegment.point, this));
     }
     else {
         // calculate point positions
@@ -241,52 +233,39 @@ function skBoundingBox(displayElement) {
         var ll = tl.add(0, rect.height);
         var lr = tl.add(rect.width, rect.height);
 
-        this._anchorPts[0] = tl;
-        this._anchorPts[2] = ll;
-        this._anchorPts[4] = lr;
-        this._anchorPts[6] = tr;
-
-        // create the mid points
+        // calculate the mid points
         //
-        this._anchorPts[1] = this._anchorPts[0].add(this._anchorPts[2]).multiply(0.5);
-        this._anchorPts[3] = this._anchorPts[2].add(this._anchorPts[4]).multiply(0.5);
-        this._anchorPts[5] = this._anchorPts[4].add(this._anchorPts[6]).multiply(0.5);
-        this._anchorPts[7] = this._anchorPts[6].add(this._anchorPts[0]).multiply(0.5);
+        var leftmid = tl.add(ll).multiply(0.5);
+        var lowermid = ll.add(lr).multiply(0.5);
+        var rightmid = lr.add(tr).multiply(0.5);
+        var topmid = tr.add(tl).multiply(0.5);
 
-        var tl = this._anchorPts[0];
-        var tr = this._anchorPts[6];
         var handleLength = 20;
         var handleStart = tl.add(tr).multiply(0.5);
         var handleEnd = handleStart.add(0, -handleLength);
 
         // create edges
         //
-        var i;
-        for (i = 0; i < this._anchorPts.length; i += 2) {
-            var startPtIndex = i;
-            var endPtIndex = (i + 2) % this._anchorPts.length;
-            var edge = new skBBoxEdge(this._anchorPts[startPtIndex], this._anchorPts[endPtIndex], this);
-        }
-
-        var edge = new skBBoxEdge(handleStart, handleEnd, this);
-
-        // create corner points
-        //
-        for (i = 0; i < this._anchorPts.length; i += 2) {
-            var anchorPt = new skBBoxCornerPt(this._anchorPts[i], this);
-            anchorPt.setIndex(i);
-        }
-
+        new skBBoxEdge(tl, ll, this);
+        new skBBoxEdge(ll, lr, this);
+        new skBBoxEdge(lr, tr, this);
+        new skBBoxEdge(tr, tl, this);
+        new skBBoxEdge(handleStart, handleEnd, this);
+        
         // create handle end point
         //
-        var anchorPt = new skBBoxHandleEndPt(handleEnd, this);
+        new skBBoxHandleEndPt(handleEnd, this);
 
-        // create mid points
+        // create corner points and mid points
         //
-        for (i = 1; i < this._anchorPts.length; i += 2) {
-            var anchorPt = new skBBoxEdgeMidPt(this._anchorPts[i], this);
-            anchorPt.setIndex(i);
-        }
+        this._anchorPts.push(new skBBoxCornerPt(tl, this));
+        this._anchorPts.push(new skBBoxEdgeMidPt(leftmid, this));
+        this._anchorPts.push(new skBBoxCornerPt(ll, this));
+        this._anchorPts.push(new skBBoxEdgeMidPt(lowermid, this));
+        this._anchorPts.push(new skBBoxCornerPt(lr, this));
+        this._anchorPts.push(new skBBoxEdgeMidPt(rightmid, this));
+        this._anchorPts.push(new skBBoxCornerPt(tr, this));
+        this._anchorPts.push(new skBBoxEdgeMidPt(topmid, this));
     }
 
     this.removePathItems =  function() {
@@ -304,20 +283,13 @@ function skBoundingBox(displayElement) {
     }
 
     this.rect = function () {
-        return new Rectangle(this._anchorPts[0], this._anchorPts[4]);
+        var topleft = this._anchorPts.head().position;
+        var lowerright = this._anchorPts.nextNode(this._anchorPts.head(), 4).position;
+        return new Rectangle(topleft, lowerright);
     }
-
+    
     this.anchorPts = function () {
         return this._anchorPts;
-    }
-
-    this.getPathItemByAnchorPtIndex = function (index) {
-        var i;
-        for (i = 0; i < this._items.length; i++) {
-            if (this._items[i].anchorIndex === index)
-                return this._items[i];
-        }
-
     }
 }
 
@@ -328,10 +300,7 @@ function skBoundingBox(displayElement) {
 //-------------------------------------------------
 
 function skBBoxElement() {
-
-    this.setIndex = function (index) {
-        this._pathItem.anchorIndex = index;
-    }
+    this.position = null;
 
     this.setBoundingBox = function (bbox) {
         this._pathItem.owningBBox = bbox;
@@ -342,17 +311,11 @@ function skBBoxElement() {
         return 4;
     }
 
-    this.init = function (pathItem, bbox) {
+    this.init = function (pt, pathItem, bbox) {
+        this.position = pt;
         this._pathItem = pathItem;
         this._pathItem.owningBBoxElement = this;
         this.setBoundingBox(bbox);
-    }
-
-    this.modOffset = function (index, offset, length) {
-        var i = (index - offset) % length;
-        if (i < 0)
-            i += length;
-        return i;
     }
 
     this.setCursorStyleByVec = function (vec) {
@@ -396,12 +359,11 @@ function skBBoxLineEndPt(pt, bbox) {
         strokeWidth: 1
     };
 
-    this.init(pathItem, bbox);
+    this.init(pt,pathItem, bbox);
 
     this.setCursorStyle = function () {
-        var pathItem = this._pathItem;
-        var pt1 = pathItem.owningBBox._anchorPts[0];
-        var pt2 = pathItem.owningBBox._anchorPts[1];
+        var pt1 = this.position;
+        var pt2 = this.prev.position;
         var vec = pt1.subtract(pt2);
         var mul = vec.x * vec.y;
         if (mul > 0)        // note the canvas coordinate system is y-flip with normal orthogonal system
@@ -430,21 +392,17 @@ function skBBoxCornerPt(pt, bbox) {
         strokeWidth: 1
     };
 
-    this.init(pathItem, bbox);
+    this.init(pt,pathItem, bbox);
 
     this.setCursorStyle = function () {
-        var vec = this.getVector(this._pathItem.anchorIndex);
+        var vec = this.getVector();
         this.setCursorStyleByVec(vec);
     }
 
-    this.getVector = function (anchorPtIndex) {
-        var allAnchorPts = this._pathItem.owningBBox.anchorPts();
-        var self = anchorPtIndex;
-        var pre = this.modOffset(self, -2, allAnchorPts.length);
-        var next = this.modOffset(self, 2, allAnchorPts.length);
-        var cornerPt = allAnchorPts[self];
-        var neighborPt1 = allAnchorPts[pre];
-        var neighborPt2 = allAnchorPts[next];
+    this.getVector = function () {
+        var cornerPt = this.position;
+        var neighborPt1 = this.prev.position;
+        var neighborPt2 = this.next.position;
 
         var vec1 = neighborPt1.subtract(cornerPt).normalize();
         var vec2 = neighborPt2.subtract(cornerPt).normalize();
@@ -455,15 +413,9 @@ function skBBoxCornerPt(pt, bbox) {
         return vec;
     }
 
-    this.move = function (delta) {
-        var selfIndex = this._pathItem.anchorIndex;
-        var allAnchorPts = this._pathItem.owningBBox.anchorPts();
-        var edgeNeighbor1Index = this.modOffset(selfIndex, 1, allAnchorPts.length);
-        var edgeNeighbor2Index = this.modOffset(selfIndex, -1, allAnchorPts.length);
-        var edgeNeighbor1 = this._pathItem.owningBBox.getPathItemByAnchorPtIndex(edgeNeighbor1Index).owningBBoxElement;
-        var edgeNeighbor2 = this._pathItem.owningBBox.getPathItemByAnchorPtIndex(edgeNeighbor2Index).owningBBoxElement;        
-        edgeNeighbor1.move(delta);
-        edgeNeighbor2.move(delta);
+    this.move = function (delta) {  
+        this.prev.move(delta);
+        this.next.move(delta);
     }
 }
 
@@ -485,35 +437,31 @@ function skBBoxEdgeMidPt(pt, bbox) {
         strokeWidth: 1
     };
 
-    this.init(pathItem, bbox);
+    this.init(pt,pathItem, bbox);
 
     this.setCursorStyle = function () {
-        var vec = this.getVector(this._pathItem.anchorIndex);
+        var vec = this.getVector();
         this.setCursorStyleByVec(vec);
     }
 
     this.getVector = function (anchorPtIndex) {
         var allAnchorPts = this._pathItem.owningBBox.anchorPts();
-        var self = anchorPtIndex;
-        var opposite = this.modOffset(self, 4, allAnchorPts.length);
-        var edgePt = allAnchorPts[self];
-        var oppEdgePt = allAnchorPts[opposite];
+        var edgePt = this.position;
+        var oppEdgePt = allAnchorPts.nextNode(this, 4).position;
 
         var vec = edgePt.subtract(oppEdgePt).normalize();
         return vec;
     }
 
     this.move = function (delta) {
-        var selfIndex = this._pathItem.anchorIndex;
         var allAnchorPts = this._pathItem.owningBBox.anchorPts();
-        var oppositeEdgePtIndex = this.modOffset(selfIndex, 4, allAnchorPts.length);
-        var n = allAnchorPts[selfIndex].subtract(allAnchorPts[oppositeEdgePtIndex]).normalize();
+        var edgePt = this.position;
+        var oppEdgePt = allAnchorPts.nextNode(this, 4).position;
+        var n = edgePt.subtract(oppEdgePt).normalize();
         var moveVec = n.multiply(n.dot(delta));
 
-        var neighborCorner1Index = this.modOffset(selfIndex, 1, allAnchorPts.length);
-        var neighborCorner2Index = this.modOffset(selfIndex, -1, allAnchorPts.length);
-        allAnchorPts[neighborCorner1Index] = allAnchorPts[neighborCorner1Index].add(moveVec);
-        allAnchorPts[neighborCorner2Index] = allAnchorPts[neighborCorner2Index].add(moveVec);
+        this.prev.position = this.prev.position.add(moveVec);
+        this.next.position = this.next.position.add(moveVec);
     }
 }
 
@@ -535,7 +483,7 @@ function skBBoxHandleEndPt(pt, bbox) {
         strokeWidth: 1
     };
 
-    this.init(pathItem, bbox);
+    this.init(pt,pathItem, bbox);
 
     this.setCursorStyle = function () {
         rnGraphicsManager.drawingCanvas().style.cursor = "crosshair";
@@ -559,7 +507,7 @@ function skBBoxEdge(pt1, pt2, bbox) {
         strokeWidth: 1
     };
 
-    this.init(pathItem, bbox);
+    this.init(pt1, pathItem, bbox);
 
     this.setCursorStyle = function () {
         // none-op
@@ -567,3 +515,46 @@ function skBBoxEdge(pt1, pt2, bbox) {
 }
 
 skBBoxEdge.prototype = new skBBoxElement();
+
+
+//-------------------------------------------------
+//
+//	skLinkedList: a simple double circuit linked list
+//
+//-------------------------------------------------
+
+function skLinkedList() {
+    this._head = null;
+    this._tail = null;
+    
+    this.head = function() {
+        return this._head;
+    }
+    
+    this.push = function (node) {
+        node.owningLinkedList = this;
+        if (!this._head) {
+            this._head = node;
+            this._tail = node;
+            node.prev = node;
+            node.next = node;
+        }
+        else {
+            this._tail.next = node;
+            node.prev = this._tail;
+            node.next = this._head;
+            this._head.prev = node;
+            
+            this._tail = node;
+        }
+    }
+    
+    this.nextNode = function(node, offset) {
+        var target = node;
+        var i;
+        for (i = 0; i < offset; i++) {
+            target = target.next;
+        }
+        return target;
+    }
+}
