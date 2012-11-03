@@ -208,6 +208,8 @@ function skCreateGeomCommand() {
         var mpt2 = skConv.toMathPoint(pt2);
         var skelement = this.createSkElement(mpt1, mpt2);
         var dispElement = this.populateDispElement(skelement);
+        
+        rnController.setActiveCommand(new skSelectGeomCommand());
         dispElement.setIsSelected(true);
 
         view.draw();
@@ -301,38 +303,28 @@ function skSelectGeomCommand() {
     this.onMouseDown = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);        
 
-        if (hitResult.item.dispElement) {
+        if (hitResult && hitResult.item && hitResult.item.dispElement) {
             if (!hitResult.item.dispElement.isSelected()) {
                 rnController.deselectAll();
                 hitResult.item.dispElement.setIsSelected(true);
+                rnController.setActiveCommand(new skMoveGeomCommand(hitResult.item));
             }
             else {
-                if (hitResult.item.owningBBox) {
+                if (hitResult.item.owningBBoxElement) {
                     rnController.setActiveCommand(new skResizeGeomCommand(hitResult.item));
                 }
+                else
+                    rnController.setActiveCommand(new skMoveGeomCommand(hitResult.item));
             }
         }
+        else {
+            rnController.deselectAll();
+        }
+
 
         view.draw();
     }
-
-    this.onMouseDrag = function (event) {
-        var selected = rnController.selectedDispElements();
-        if (selected.length > 0) {
-            var i;
-            for (i = 0; i < selected.length; i++) {
-                var element = selected[i].skElement();
-                element.move(event.delta.x, event.delta.y);
-                var changeEvent = {
-                    message: "geometry moved",
-                    dx: event.delta.x,
-                    dy: event.delta.y
-                }
-                element.notify(changeEvent);
-            }
-        }
-    }
-    
+   
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult) {
@@ -394,5 +386,28 @@ skResizeGeomCommand.prototype = new skCommand();
 //-------------------------------------------------
 
 function skMoveGeomCommand(pathItem) {
+    skCommand.call(this);
 
+    var canvas = rnGraphicsManager.drawingCanvas();
+    canvas.style.cursor = "move";
+
+    this.onMouseDrag = function (event) {
+        var BBox = pathItem.dispElement.boundingBox();
+        BBox.move(event.delta);
+        var dispElement = pathItem.dispElement;
+        var tempPath = dispElement.clonePathItem(BBox.defPt1(), BBox.defPt2());
+        tempPath.opacity = 0.5;
+        tempPath.removeOnDrag();
+        tempPath.removeOnUp();
+    }
+
+    this.onMouseUp = function (event) {
+        var BBox = pathItem.dispElement.boundingBox();
+        var dispElement = pathItem.dispElement;
+        dispElement.skElement().reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
+        rnController.setActiveCommand(new skSelectGeomCommand());
+        dispElement.setIsSelected(true);
+    }
 }
+
+skMoveGeomCommand.prototype = new skCommand();

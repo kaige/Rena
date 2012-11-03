@@ -255,18 +255,25 @@ function skBoundingBox(displayElement) {
 function skLineBounds(dispLine) {
     skBoundingBox.call(this, dispLine);
 
-    var pathLine = dispLine.pathItem();
-
+    var pathLine = dispLine.pathItem();    
     var linkedList = new skLinkedList();
     linkedList.push(new skBBoxLineEndPt(pathLine.firstSegment.point, this));
     linkedList.push(new skBBoxLineEndPt(pathLine.lastSegment.point, this));
 
+    var start = linkedList.head();
+    var end = linkedList.head().next;
+
     this.defPt1 = function () {
-        return linkedList.head().position;
+        return start.position;
     }
 
     this.defPt2 = function () {
-        return linkedList.head().next.position;
+        return end.position;
+    }
+
+    this.move = function (delta) {
+        start.move(delta);
+        end.move(delta);
     }
 }
 
@@ -331,14 +338,21 @@ function skRectBounds(dispElement) {
         return bboxElement.next.next.next.next;
     }
 
+    var upperLeft = linkedList.head();
+    var lowerRight = this.oppositeBBoxElement(upperLeft);
+
     this.defPt1 = function () {
-        return linkedList.head().position;
+        return upperLeft.position;
     }
 
     this.defPt2 = function () {
-        return this.oppositeBBoxElement(linkedList.head()).position;
+        return lowerRight.position;
     }
 
+    this.move = function (delta) {
+        upperLeft.position = upperLeft.position.add(delta);
+        lowerRight.position = lowerRight.position.add(delta);
+    }
 }
 
 skRectBounds.prototype = new skBoundingBox();
@@ -384,7 +398,8 @@ function skBBoxLineEndPt(pt, bbox) {
     pathItem.style = {
         fillColor: '#C5E6EA',
         strokeColor: '#385D8A',
-        strokeWidth: 1
+        strokeWidth: 1,
+        opacity: 0.5
     };
 
     this.init(pt,pathItem, bbox);
@@ -445,7 +460,8 @@ function skBBoxCornerPt(pt, bbox) {
     pathItem.style = {
         fillColor: '#C5E6EA',
         strokeColor: '#385D8A',
-        strokeWidth: 1
+        strokeWidth: 1,
+        opacity: 0.5
     };
 
     this.init(pt,pathItem, bbox);
@@ -489,7 +505,8 @@ function skBBoxEdgeMidPt(pt, bbox) {
     pathItem.style = {
         fillColor: '#C5E6EA',
         strokeColor: '#385D8A',
-        strokeWidth: 1
+        strokeWidth: 1,
+        opacity: 0.5
     };
 
     this.init(pt,pathItem, bbox);
@@ -532,7 +549,8 @@ function skBBoxHandleEndPt(pt, bbox) {
     pathItem.style = {
         fillColor: '#8BE73D',
         strokeColor: '#385D8A',
-        strokeWidth: 1
+        strokeWidth: 1,
+        opacity: 0.5
     };
 
     this.init(pt,pathItem, bbox);
@@ -556,7 +574,8 @@ function skBBoxEdge(pt1, pt2, bbox) {
     var pathItem = new Path.Line(pt1, pt2);
     pathItem.style = {
         strokeColor: '#385D8A',
-        strokeWidth: 1
+        strokeWidth: 1,
+        opacity: 0.5
     };
 
     this.init(pt1, pathItem, bbox);
