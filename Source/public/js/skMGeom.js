@@ -88,9 +88,9 @@ function skMLineSegment(pt1, pt2) {
 	    this._endPt.move(dx, dy);
 	}
 	
-	this.resize = function (rect) {
-	    this._startPt = rect.topLeft();
-	    this._endPt = rect.bottomRight();
+	this.reset = function (pt1, pt2) {
+	    this._startPt = pt1;
+	    this._endPt = pt2;
 	}	
 }
 
@@ -125,8 +125,9 @@ function skMRectangle(pt1, pt2) {
 	    this._bottomRight.move(dx, dy);
 	}
 	
-	this.resize = function (rect) {
-	    this = rect;
+	this.reset = function (pt1, pt2) {
+	    this._topLeft = pt1;
+	    this._bottomRight = pt2;
 	}
 	
 }
@@ -161,7 +162,7 @@ function skMOval(rect, circumscribed) {
 	    this._rect.move(dx, dy);
 	}
 	
-	this.resize = function (rect) {
-	    this._rect = rect;
+	this.reset = function (pt1, pt2) {
+	    this._rect.reset(pt1, pt2);
 	}	
 }

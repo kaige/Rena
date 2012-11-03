@@ -64,8 +64,8 @@ function skElement() {
 	    this.notify(geomChangeEvent);
 	}
 	
-	this.resize = function (rect) {
-	    this._geom.resize(rect);
+	this.reset = function (pt1, pt2) {
+	    this._geom.reset(pt1, pt2);
 	    this.notify(geomChangeEvent);
 	}
 

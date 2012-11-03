@@ -299,15 +299,18 @@ function skSelectGeomCommand() {
     };
 
     this.onMouseDown = function (event) {
-        var hitResult = project.hitTest(event.point, hitOptions);
+        var hitResult = project.hitTest(event.point, hitOptions);        
+
         if (hitResult.item.dispElement) {
             if (!hitResult.item.dispElement.isSelected()) {
                 rnController.deselectAll();
                 hitResult.item.dispElement.setIsSelected(true);
             }
-        }
-        else if (hitResult.item.owningBBox) {
-            rnController.setActiveCommand(new skResizeGeomCommand(hitResult.item));
+            else {
+                if (hitResult.item.owningBBox) {
+                    rnController.setActiveCommand(new skResizeGeomCommand(hitResult.item));
+                }
+            }
         }
 
         view.draw();
@@ -333,10 +336,12 @@ function skSelectGeomCommand() {
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult) {
-            if (hitResult.item.owningBBoxElement) {
-                hitResult.item.owningBBoxElement.setCursorStyle();
+            if (hitResult.item.owningBBoxElement) {                 
+                if (hitResult.item.dispElement.isSelected()) {
+                    hitResult.item.owningBBoxElement.setCursorStyle();
+                }
             }
-            else {
+            else if (hitResult.item.dispElement) {
                 rnGraphicsManager.drawingCanvas().style.cursor = "move";
             }
         }
@@ -350,7 +355,7 @@ skSelectGeomCommand.prototype = new skCommand();
 
 //-------------------------------------------------
 //
-//	skSelectGeomCommand
+//	skResizeGeomCommand
 //
 //-------------------------------------------------
 
@@ -363,7 +368,8 @@ function skResizeGeomCommand(anchorPtPathItem) {
     this.onMouseDrag = function (event) {
         anchorPtPathItem.owningBBoxElement.move(event.delta);
         var BBox = anchorPtPathItem.owningBBox;
-        var tempPath = BBox.dispElement.clonePathItem(BBox.rect());
+        var dispElement = anchorPtPathItem.dispElement;
+        var tempPath = dispElement.clonePathItem(BBox.defPt1(), BBox.defPt2());
         tempPath.opacity = 0.5;
         tempPath.removeOnDrag();
         tempPath.removeOnUp();
@@ -371,11 +377,22 @@ function skResizeGeomCommand(anchorPtPathItem) {
 
     this.onMouseUp = function (event) {
         var BBox = anchorPtPathItem.owningBBox;
-        BBox.dispElement.skElement().resize(skConv.toMathRect(BBox.rect())); 
+        var dispElement = anchorPtPathItem.dispElement;
+        dispElement.skElement().reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
         rnController.setActiveCommand(new skSelectGeomCommand());  
-        BBox.dispElement.setIsSelected(true);
+        dispElement.setIsSelected(true);
     }
 
 }
 
 skResizeGeomCommand.prototype = new skCommand();
+
+//-------------------------------------------------
+//
+//	skMoveGeomCommand
+//
+//-------------------------------------------------
+
+function skMoveGeomCommand(pathItem) {
+
+}
