@@ -69,6 +69,14 @@ function skElement() {
 	    this.notify(geomChangeEvent);
 	}
 
+	this.angle = function () {
+	    return this._geom.angle();
+	}
+
+	this.setAngle = function (ang) {
+	    this._geom.setAngle(ang);
+	}
+
 	this.notify = function (event) {
 	    var i;
 	    for (i = 0; i < this._listeners.length; i++) {

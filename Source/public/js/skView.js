@@ -309,12 +309,14 @@ function skSelectGeomCommand() {
                 hitResult.item.dispElement.setIsSelected(true);
                 rnController.setActiveCommand(new skMoveGeomCommand(hitResult.item));
             }
+            else if (hitResult.item.owningBBoxElement && hitResult.item.owningBBoxElement.isHandlePt) {
+                rnController.setActiveCommand(new skRotateGeomCommand(hitResult.item));
+            }
+            else if (hitResult.item.owningBBoxElement && hitResult.item.owningBBoxElement.isAnchorPt) {
+                rnController.setActiveCommand(new skResizeGeomCommand(hitResult.item));
+            }
             else {
-                if (hitResult.item.owningBBoxElement) {
-                    rnController.setActiveCommand(new skResizeGeomCommand(hitResult.item));
-                }
-                else
-                    rnController.setActiveCommand(new skMoveGeomCommand(hitResult.item));
+                rnController.setActiveCommand(new skMoveGeomCommand(hitResult.item));
             }
         }
         else {
@@ -411,3 +413,55 @@ function skMoveGeomCommand(pathItem) {
 }
 
 skMoveGeomCommand.prototype = new skCommand();
+
+//-------------------------------------------------
+//
+//	skRotateGeomCommand
+//
+//-------------------------------------------------
+
+function skRotateGeomCommand(handlePtPathItem) {
+    skCommand.call(this);
+
+    var canvas = rnGraphicsManager.drawingCanvas();
+    canvas.style.cursor = "crosshair";     //"url(cursor_rotate_pressed.cur)" doesn't work
+
+    var oldAngle = handlePtPathItem.dispElement.skElement().angle();
+
+    this.onMouseDrag = function (event) {
+        var dispElement = handlePtPathItem.dispElement;
+        var BBox = dispElement.boundingBox();
+        var deltaAngle = this.determineRotateAngle(event.downPoint, event.point, BBox.center());
+        dispElement.skElement().setAngle(oldAngle + deltaAngle);
+        
+        var tempPath = dispElement.clonePathItem(BBox.defPt1(), BBox.defPt2());
+        tempPath.opacity = 0.5;
+        tempPath.removeOnDrag();
+        tempPath.removeOnUp();
+    }
+
+    this.onMouseUp = function (event) {
+        var dispElement = handlePtPathItem.dispElement;
+        var BBox = dispElement.boundingBox();
+        dispElement.skElement().reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
+        rnController.setActiveCommand(new skSelectGeomCommand());
+        dispElement.setIsSelected(true);
+    }
+
+    this.determineRotateAngle = function (ptOld, ptNew, center) {
+        var vec1 = ptOld.subtract(center).normalize();
+        var vec2 = ptNew.subtract(center).normalize();
+        var angle = Math.acos(vec1.dot(vec2));
+        angle = angle / Math.PI * 180;
+
+        var sign = vec1.cross(vec2);
+        if (sign < 0)
+            angle = -angle;
+
+        return angle;
+    }
+
+}
+
+skRotateGeomCommand.prototype = new skCommand();
+
