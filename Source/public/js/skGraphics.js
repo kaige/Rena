@@ -449,7 +449,7 @@ function skBBoxHandleEndPt(pt, bbox) {
     this.isHandlePt = true;
 
     this.setCursorStyle = function () {
-        rnGraphicsManager.drawingCanvas().style.cursor = "crosshair";
+        rnGraphicsManager.drawingCanvas().style.cursor = "url(\"img\\\\cursor_rotate_highlight.cur\") 10 10, crosshair";
     }
 }
 

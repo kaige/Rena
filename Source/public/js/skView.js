@@ -424,7 +424,7 @@ function skRotateGeomCommand(handlePtPathItem) {
     skCommand.call(this);
 
     var canvas = rnGraphicsManager.drawingCanvas();
-    canvas.style.cursor = "crosshair";     //"url(cursor_rotate_pressed.cur)" doesn't work
+    canvas.style.cursor = "url(\"img\\\\cursor_rotate_pressed.cur\") 10 10, crosshair";     //"url(cursor_rotate_pressed.cur)" doesn't work
 
     var oldAngle = handlePtPathItem.dispElement.skElement().angle();
 
@@ -447,6 +447,10 @@ function skRotateGeomCommand(handlePtPathItem) {
         rnController.setActiveCommand(new skSelectGeomCommand());
         dispElement.setIsSelected(true);
     }
+	
+	this.onMouseMove = function (event) {
+		// do nothing
+	}
 
     this.determineRotateAngle = function (ptOld, ptNew, center) {
         var vec1 = ptOld.subtract(center).normalize();
