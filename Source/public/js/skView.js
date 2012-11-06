@@ -349,37 +349,59 @@ skSelectGeomCommand.prototype = new skCommand();
 
 //-------------------------------------------------
 //
-//	skResizeGeomCommand
+//	skEditGeomCommand
 //
 //-------------------------------------------------
 
-function skResizeGeomCommand(anchorPtPathItem) {
+function skEditGeomCommand(pathItem) {
     skCommand.call(this);
 
-    var canvas = rnGraphicsManager.drawingCanvas();
-    canvas.style.cursor = "crosshair";
-
     this.onMouseDrag = function (event) {
-        anchorPtPathItem.owningBBoxElement.move(event.delta);
-        var BBox = anchorPtPathItem.owningBBox;
-        var dispElement = anchorPtPathItem.dispElement;
-        var tempPath = dispElement.clonePathItem(BBox.defPt1(), BBox.defPt2());
+        this.editBoundingBox(event);
+        this.editSkElement(event);
+        var dispElement = pathItem.dispElement;
+        var tempPath = dispElement.clonePathItemByBBox();
         tempPath.opacity = 0.5;
         tempPath.removeOnDrag();
         tempPath.removeOnUp();
     }
 
     this.onMouseUp = function (event) {
-        var BBox = anchorPtPathItem.owningBBox;
-        var dispElement = anchorPtPathItem.dispElement;
-        dispElement.skElement().reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
-        rnController.setActiveCommand(new skSelectGeomCommand());  
+        var BBox = pathItem.dispElement.boundingBox();
+        var skElement = pathItem.dispElement.skElement();
+        var dispElement = pathItem.dispElement;
+        skElement.reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
+        rnController.setActiveCommand(new skSelectGeomCommand());
         dispElement.setIsSelected(true);
+    }
+
+    this.editBoundingBox = function (event) { }
+    this.editSkElement = function (event) { }
+}
+
+skEditGeomCommand.prototype = new skCommand();
+
+
+//-------------------------------------------------
+//
+//	skResizeGeomCommand
+//
+//-------------------------------------------------
+
+function skResizeGeomCommand(anchorPtPathItem) {
+    skEditGeomCommand.call(this, anchorPtPathItem);
+
+    var canvas = rnGraphicsManager.drawingCanvas();
+    canvas.style.cursor = "crosshair";
+
+    this.editBoundingBox = function (event) {
+        var BBoxElement = anchorPtPathItem.owningBBoxElement;
+        BBoxElement.move(event.delta);
     }
 
 }
 
-skResizeGeomCommand.prototype = new skCommand();
+skResizeGeomCommand.prototype = new skEditGeomCommand();
 
 //-------------------------------------------------
 //
@@ -388,31 +410,18 @@ skResizeGeomCommand.prototype = new skCommand();
 //-------------------------------------------------
 
 function skMoveGeomCommand(pathItem) {
-    skCommand.call(this);
+    skEditGeomCommand.call(this, pathItem);
 
     var canvas = rnGraphicsManager.drawingCanvas();
     canvas.style.cursor = "move";
 
-    this.onMouseDrag = function (event) {
+    this.editBoundingBox = function (event) {
         var BBox = pathItem.dispElement.boundingBox();
         BBox.move(event.delta);
-        var dispElement = pathItem.dispElement;
-        var tempPath = dispElement.clonePathItem(BBox.defPt1(), BBox.defPt2());
-        tempPath.opacity = 0.5;
-        tempPath.removeOnDrag();
-        tempPath.removeOnUp();
-    }
-
-    this.onMouseUp = function (event) {
-        var BBox = pathItem.dispElement.boundingBox();
-        var dispElement = pathItem.dispElement;
-        dispElement.skElement().reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
-        rnController.setActiveCommand(new skSelectGeomCommand());
-        dispElement.setIsSelected(true);
     }
 }
 
-skMoveGeomCommand.prototype = new skCommand();
+skMoveGeomCommand.prototype = new skEditGeomCommand();
 
 //-------------------------------------------------
 //
@@ -421,35 +430,22 @@ skMoveGeomCommand.prototype = new skCommand();
 //-------------------------------------------------
 
 function skRotateGeomCommand(handlePtPathItem) {
-    skCommand.call(this);
+    skEditGeomCommand.call(this, handlePtPathItem);
 
     var canvas = rnGraphicsManager.drawingCanvas();
     canvas.style.cursor = "url(\"img\\\\cursor_rotate_pressed.cur\") 10 10, crosshair";     //"url(cursor_rotate_pressed.cur)" doesn't work
 
     var oldAngle = handlePtPathItem.dispElement.skElement().angle();
 
-    this.onMouseDrag = function (event) {
-        var dispElement = handlePtPathItem.dispElement;
-        var BBox = dispElement.boundingBox();
+    this.editSkElement = function (event) {
+        var skElement = handlePtPathItem.dispElement.skElement();
+        var BBox = handlePtPathItem.dispElement.boundingBox();
         var deltaAngle = this.determineRotateAngle(event.downPoint, event.point, BBox.center());
-        dispElement.skElement().setAngle(oldAngle + deltaAngle);
-        
-        var tempPath = dispElement.clonePathItem(BBox.defPt1(), BBox.defPt2());
-        tempPath.opacity = 0.5;
-        tempPath.removeOnDrag();
-        tempPath.removeOnUp();
-    }
-
-    this.onMouseUp = function (event) {
-        var dispElement = handlePtPathItem.dispElement;
-        var BBox = dispElement.boundingBox();
-        dispElement.skElement().reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
-        rnController.setActiveCommand(new skSelectGeomCommand());
-        dispElement.setIsSelected(true);
+        skElement.setAngle(oldAngle + deltaAngle);
     }
 	
 	this.onMouseMove = function (event) {
-		// do nothing
+		// do nothing to prevent cursor style inadvertently changed by others
 	}
 
     this.determineRotateAngle = function (ptOld, ptNew, center) {
@@ -467,5 +463,5 @@ function skRotateGeomCommand(handlePtPathItem) {
 
 }
 
-skRotateGeomCommand.prototype = new skCommand();
+skRotateGeomCommand.prototype = new skEditGeomCommand();
 

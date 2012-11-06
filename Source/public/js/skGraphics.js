@@ -116,6 +116,10 @@ function skDispElement(element) {
         return this._isSelected;
     }
 
+    this.clonePathItemByBBox = function () {      // clone a path item using current BBox position/orientation
+        return this.clonePathItem(this._boundingBox.defPt1(), this._boundingBox.defPt2());
+    }
+
     this.setDrawingStyle = function (pathItem, skElement) {
         pathItem.style = {
             fillColor: skElement.fillColor(),
