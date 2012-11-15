@@ -149,7 +149,6 @@ function skMRectangle(pt1, pt2) {
 function skMOval(rect, circumscribed) {
 	this._rect = rect;
 	this._circum = circumscribed;	// true: rectangle fits into oval; false: oval fits into rectangle
-	this._angle = 0.0;
 	
 	this.rect = function() {
 		return this._rect;
@@ -176,10 +175,10 @@ function skMOval(rect, circumscribed) {
 	}
 
 	this.angle = function () {
-	    return this._angle;
+	    return this._rect.angle();
 	}
 
 	this.setAngle = function (ang) {
-	    this._angle = ang;
+	    this._rect.setAngle(ang);
 	}
 }

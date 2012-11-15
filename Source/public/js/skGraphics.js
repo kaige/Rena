@@ -393,44 +393,6 @@ function skBBoxElement() {
     }
 }
 
-//-------------------------------------------------
-//
-//	skLineEndAnchorPoint
-//
-//-------------------------------------------------
-
-function skBBoxLineEndPt(pt, bbox) {
-    skBBoxElement.call(this);
-
-    var pathItem = Path.Circle(pt, this.r());
-    pathItem.style = {
-        fillColor: '#C5E6EA',
-        strokeColor: '#385D8A',
-        strokeWidth: 1,
-        opacity: 0.5
-    };
-
-    this.init(pt, pathItem, bbox);
-    this.isAnchorPt = true;
-
-    this.setCursorStyle = function () {
-        var pt1 = this.position;
-        var pt2 = this.prev.position;
-        var vec = pt1.subtract(pt2);
-        var mul = vec.x * vec.y;
-        if (mul > 0)        // note the canvas coordinate system is y-flip with normal orthogonal system
-            rnGraphicsManager.drawingCanvas().style.cursor = "se-resize";
-        else
-            rnGraphicsManager.drawingCanvas().style.cursor = "ne-resize";
-    }
-
-    this.move = function (delta) {
-        this.position = this.position.add(delta);
-    }
-
-}
-
-skBBoxLineEndPt.prototype = new skBBoxElement();
 
 //-------------------------------------------------
 //
@@ -492,6 +454,7 @@ skBBoxEdge.prototype = new skBBoxElement();
 
 function skBBoxAnchorPt() {
     skBBoxElement.call(this);
+	this.isAnchorPt = true;
 
     this.globalPos = function () {
         var center = this.owningBBox.center();
@@ -506,6 +469,10 @@ function skBBoxAnchorPt() {
         var angle = this.owningBBox.dispElement.skElement().angle();
         var pt = globalPos;
         this.position = pt.rotate(-angle, center);
+    }
+	
+	this.setCursorStyle = function () {
+        this.setCursorStyleByVec(this.getVector());
     }
 
     this.setCursorStyleByVec = function (vec) {
@@ -542,7 +509,7 @@ skBBoxAnchorPt.prototype = new skBBoxElement();
 //-------------------------------------------------
 
 function skBBoxCornerPt(pt, bbox) {
-    skBBoxElement.call(this);
+    skBBoxAnchorPt.call(this);
 
     var pathItem = Path.Circle(pt, this.r());
     pathItem.style = {
@@ -553,11 +520,6 @@ function skBBoxCornerPt(pt, bbox) {
     };
 
     this.init(pt, pathItem, bbox);
-    this.isAnchorPt = true;
-
-    this.setCursorStyle = function () {
-        this.setCursorStyleByVec(this.getVector());
-    }
 
     this.getVector = function () {
         var cornerPt = this.globalPos();
@@ -588,7 +550,7 @@ skBBoxCornerPt.prototype = new skBBoxAnchorPt();
 //-------------------------------------------------
 
 function skBBoxEdgeMidPt(pt, bbox) {
-    skBBoxElement.call(this);
+    skBBoxAnchorPt.call(this);
 
     var pathItem = new Path.Rectangle(pt.x - this.r(), pt.y - this.r(), 2*this.r(), 2*this.r());
     pathItem.style = {
@@ -599,11 +561,6 @@ function skBBoxEdgeMidPt(pt, bbox) {
     };
 
     this.init(pt, pathItem, bbox);
-    this.isAnchorPt = true;
-
-    this.setCursorStyle = function () {
-        this.setCursorStyleByVec(this.getVector());
-    }
 
     this.getVector = function () {
         var edgePt = this.globalPos();
@@ -656,6 +613,44 @@ function skBBoxEdgeMidPt(pt, bbox) {
 }
 
 skBBoxEdgeMidPt.prototype = new skBBoxAnchorPt();
+
+//-------------------------------------------------
+//
+//	skLineEndAnchorPoint
+//
+//-------------------------------------------------
+
+function skBBoxLineEndPt(pt, bbox) {
+    skBBoxAnchorPt.call(this);
+
+    var pathItem = Path.Circle(pt, this.r());
+    pathItem.style = {
+        fillColor: '#C5E6EA',
+        strokeColor: '#385D8A',
+        strokeWidth: 1,
+        opacity: 0.5
+    };
+
+    this.init(pt, pathItem, bbox);
+
+    this.setCursorStyle = function () {
+        var pt1 = this.position;
+        var pt2 = this.prev.position;
+        var vec = pt1.subtract(pt2);
+        var mul = vec.x * vec.y;
+        if (mul > 0)        // note the canvas coordinate system is y-flip with normal orthogonal system
+            rnGraphicsManager.drawingCanvas().style.cursor = "se-resize";
+        else
+            rnGraphicsManager.drawingCanvas().style.cursor = "ne-resize";
+    }
+
+    this.move = function (delta) {
+        this.position = this.position.add(delta);
+    }
+
+}
+
+skBBoxLineEndPt.prototype = new skBBoxAnchorPt();
 
 //-------------------------------------------------
 //

@@ -25,3 +25,17 @@ next that:
 -Lori to write the cloud manager
 
 
+2:39 PM 11/15/2012
+===================
+Now we have some basic functionalities ready like creating/moving/rotating/resizing lines and ovals. We have a MS powerpoint like bounding box.
+
+we also have a javascript none-linear equations system solver in hand. the next step is building a constraint solver upon it.
+
+We have also identified Google Closure as our UI library.
+
+next:
+
+-- Lori will be responsible for creating the tool bar using Google Closure library.
+
+-- Kai will try to add the constraint solving functionality and the dimension edit UI.
+
