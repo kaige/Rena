@@ -135,16 +135,21 @@ function skDispElement(element) {
     }
     
     this.regenerate = function () {
-        if (this._pathItem) {
-            this._pathItem.remove();
-        }
-        
-        if (this._boundingBox) {
-            this._boundingBox.removePathItems();
-            this._boundingBox = null;
-        }
+        var oldPathItem = this._pathItem;
+        var oldBoundingBox = this._boundingBox;
         
         this.init();
+
+        if (oldPathItem) {
+            this._pathItem.moveAbove(oldPathItem);  // this keeps the order of the path item
+            oldPathItem.remove();
+            oldPathItem = null;
+        }
+
+        if (oldBoundingBox) {
+            oldBoundingBox.removePathItems();
+            oldBoundingBox = null;
+        }
     }
 }
 

@@ -300,23 +300,25 @@ function skSelectGeomCommand() {
         tolerance: 5
     };
 
-    this.onMouseDown = function (event) {
-        var hitResult = project.hitTest(event.point, hitOptions);        
+    this._hitPathItem = null;
 
-        if (hitResult && hitResult.item && hitResult.item.dispElement) {
-            if (!hitResult.item.dispElement.isSelected()) {
+    this.onMouseDown = function (event) {
+        var hitPathItem = this._hitPathItem;
+
+        if (hitPathItem && hitPathItem.dispElement) {
+            if (!hitPathItem.dispElement.isSelected()) {
                 rnController.deselectAll();
-                hitResult.item.dispElement.setIsSelected(true);
-                rnController.setActiveCommand(new skMoveGeomCommand(hitResult.item));
+                hitPathItem.dispElement.setIsSelected(true);
+                rnController.setActiveCommand(new skMoveGeomCommand(hitPathItem));
             }
-            else if (hitResult.item.owningBBoxElement && hitResult.item.owningBBoxElement.isHandlePt) {
-                rnController.setActiveCommand(new skRotateGeomCommand(hitResult.item));
+            else if (hitPathItem.owningBBoxElement && hitPathItem.owningBBoxElement.isHandlePt) {
+                rnController.setActiveCommand(new skRotateGeomCommand(hitPathItem));
             }
-            else if (hitResult.item.owningBBoxElement && hitResult.item.owningBBoxElement.isAnchorPt) {
-                rnController.setActiveCommand(new skResizeGeomCommand(hitResult.item));
+            else if (hitPathItem.owningBBoxElement && hitPathItem.owningBBoxElement.isAnchorPt) {
+                rnController.setActiveCommand(new skResizeGeomCommand(hitPathItem));
             }
             else {
-                rnController.setActiveCommand(new skMoveGeomCommand(hitResult.item));
+                rnController.setActiveCommand(new skMoveGeomCommand(hitPathItem));
             }
         }
         else {
@@ -329,17 +331,21 @@ function skSelectGeomCommand() {
    
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
-        if (hitResult) {
-            if (hitResult.item.owningBBoxElement) {                 
-                if (hitResult.item.dispElement.isSelected()) {
-                    hitResult.item.owningBBoxElement.setCursorStyle();
+        if (hitResult && hitResult.item) {
+            this._hitPathItem = hitResult.item;
+
+            var hitPathItem = this._hitPathItem;
+            if (hitPathItem.owningBBoxElement) {
+                if (hitPathItem.dispElement.isSelected()) {
+                    hitPathItem.owningBBoxElement.setCursorStyle();
                 }
             }
-            else if (hitResult.item.dispElement) {
+            else if (hitPathItem.dispElement) {
                 rnGraphicsManager.drawingCanvas().style.cursor = "move";
             }
         }
         else {
+            this._hitPathItem = null;
             rnGraphicsManager.drawingCanvas().style.cursor = "default";
         }
     }
