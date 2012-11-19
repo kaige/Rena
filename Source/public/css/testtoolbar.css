@@ -1,0 +1,170 @@
+/*
+     * Sample toolbar styles.
+     */
+
+    /* Base class for all icon elements. */
+    .icon {
+      height: 21px;
+      width: 21px;
+      /* background-image: url(../3p/closure-library/closure/goog/images/toolbar_icons.gif); */
+      background-repeat: no-repeat;
+      /* vertical-align: middle; */
+
+      
+    }
+
+    /* Font select. */
+    .goog-edit-font .goog-toolbar-menu-button-caption {
+      color: #246;
+      width: 15ex;
+      overflow: hidden;
+    }
+
+    /* Font select options. */
+    .goog-edit-font-normal {
+      font-family: Arial, sans-serif;
+    }
+    .goog-edit-font-times {
+      font-family: Times, serif;
+    }
+    .goog-edit-font-courier {
+      font-family: "Courier New", Courier, monospace;
+    }
+    .goog-edit-font-georgia {
+      font-family: Georgia, serif;
+    }
+    .goog-edit-font-trebuchet {
+      font-family: "Trebuchet MS", sans-serif;
+    }
+    .goog-edit-font-verdana {
+      font-family: Verdana, sans-serif;
+    }
+
+    /* Font size. */
+    .goog-edit-font-size .goog-toolbar-menu-button-caption {
+      color: #246;
+      width: 5ex;
+    }
+
+    /* Bold. */
+    .goog-edit-bold {
+      background-position: 0;
+    }
+	
+	.toolbar-point {
+		background-image: url(../img/toolbar/point.png);
+		/* background-image: url(../3p/closure-library/closure/goog/images/toolbar_icons.gif); */
+		background-repeat: no-repeat;
+		vertical-align: middle;
+	}
+	.toolbar-line {
+		background-image: url(../img/toolbar/line.png);
+	}
+	.toolbar-circle {
+		background-image: url(../img/toolbar/circle.png);
+	}
+
+    /* Italic. */
+    .goog-edit-italic {
+      /* background-position: -16px; */
+    }
+
+    /* Underline. */
+    .goog-edit-underline {
+      /* background-position: -32px; */
+    }
+
+    /* Color. */
+    .goog-edit-color {
+      background-position: -48px;
+    }
+
+    /* Background color. */
+    .goog-edit-background {
+      background-position: -64px;
+    }
+
+    /* Menu buttons. */
+    .goog-edit-style,
+    .goog-edit-insert,
+    .goog-edit-link,
+    .goog-edit-spellcheck {
+      font-weight: bold;
+      color: #246;
+    }
+
+    /* Link. */
+    .goog-edit-link {
+      color: #009;
+      text-decoration: underline;
+    }
+
+    /* Insert menu. */
+    .goog-edit-insert-icon {
+      background-position: -80px;
+      vertical-align: bottom;
+    }
+    .goog-edit-insert-caption {
+      padding: 0 2px;
+      vertical-align: bottom;
+    }
+
+    /* List style menu. */
+    .goog-edit-list-style {
+      background-position: -96px;
+    }
+
+    /* Text alignment buttons. */
+    .goog-edit-align-left {
+      background-position: -128px;
+    }
+    .goog-edit-align-center {
+      background-position: -144px;
+    }
+    .goog-edit-align-right {
+      background-position: -160px;
+    }
+
+    /*
+     * Menu styles, overriding those in menus.css to make these menus a little
+     * more like the CCC editor UI design.
+     */
+
+    .goog-menu {
+      position: absolute;
+      margin: 0;
+      border-width: 1px;
+      border-style: solid;
+      border-color: #ccc #999 #999 #ccc;
+      padding: 0;
+      font: normal 10pt Arial, sans-serif;
+      color: #000;
+      background-color: #fff;
+      cursor: default;
+      outline: none;
+    }
+
+    .goog-menuitem {
+      margin: 0;
+      border: 0;
+      padding: 4px 32px 4px 4px;
+      color: #000;
+      background-color: #fff;
+      list-style: none;
+    }
+
+    .goog-menuitem-disabled {
+      color: #999;
+    }
+
+    .goog-menuitem-highlight {
+      background-color: #e8eef7 !important;
+    }
+
+    .goog-menuseparator {
+      position: relative;
+      margin: 2px 0;
+      border-top: 1px solid #999;
+      padding: 0;
+      outline: none;
+    }
