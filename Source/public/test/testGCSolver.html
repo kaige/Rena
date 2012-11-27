@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>test geometric constraint solver</title>
+<script type="text/javascript"  src="../js/skMGeom.js"></script>
+<script type="text/javascript"  src="../js/3p/numeric-1.2.3.js"></script>
+<script type="text/javascript"  src="../js/skNewtonSolver.js"></script>
+<script type="text/javascript"  src="../js/skGCSolver.js"></script>
+</head>
+
+<body>
+<p id="solveResult"> Hello My SandBox </p>
+
+<script type="text/javascript">
+
+window.addEventListener('load', onLoad, false);
+
+function rosenbrock(x) {
+    var f = new Array(2);
+    f[0] = 1 - x[0];
+    f[1] = 10*(x[1] - x[0]*x[0]);
+    return f;
+}
+
+function rosenbrockJ (x ){
+    var J = new Array(2);
+    J[0] = new Array(2);
+    J[1] = new Array(2);
+    J[0][0] = -1;
+    J[0][1] = 0;
+    J[1][0] = -20*x[0]
+    J[1][1] = 10;
+    
+    return J;
+}
+
+function skConDistPtLn(pt, ln, offset) {
+
+    this.getX = function (x) {
+        x[0] = pt.x();
+        x[1] = pt.y();
+        x[2] = ln.startPt().x();
+        x[3] = ln.startPt().y();
+    }
+
+    this.setX = function (x) {
+        pt.setX(x[0]);
+        pt.setY(x[1]);
+        ln.startPt().setX(x[2]);
+        ln.startPt().setY(x[3]);
+    }
+
+    this.func = function (x) {
+        var f = new Array(1);
+        pt.setX(x[0]);
+        pt.setY(x[1]);
+        ln.startPt().setX(x[2]);
+        ln.startPt().setY(x[3]);
+
+        var lnPt = ln.startPt();
+        var lnVec = ln.direction();
+
+        var q = pt.subtract(lnPt);
+        var lateral = q.dot(lnVec);
+        var dist = Math.sqrt(q.dot(q) - lateral * lateral);
+        f[0] = dist - offset;
+        return f;
+    }
+
+    this.deriv = function (x) {
+        var J = new Array(1);
+        J[0] = new Array(4);
+
+        var lnPt = ln.startPt();
+        var lnVec = ln.direction();
+
+        var q = pt.subtract(lnPt);
+        var lateral = q.dot(lnVec);
+        var dist = Math.sqrt(q.dot(q) - lateral * lateral);
+
+        var fac = 1/(dist);
+        
+        J[0][0] = fac * (q.x() - lateral * lnVec.x());
+        J[0][1] = fac * (q.y() - lateral * lnVec.y());
+        J[0][2] = -J[0][0];
+        J[0][3] = -J[0][1];
+
+        return J;
+    }
+}
+
+
+function onLoad() {
+
+    // test constraint solver
+    //
+    var pt = new skMPoint(10, 10);
+    var start1 = new skMPoint(0, 0);
+    var start2 = new skMPoint(0, 0);
+    var v1 = new skMVector(1, 0);
+    var v2 = new skMVector(0, 1);
+    var ln1 = new skMLine(start1, v1);
+    var ln2 = new skMLine(start2, v2);
+
+    var gcSolver = new skGCSolver();
+    var sPt = gcSolver.createPoint(pt);
+    var sLn1 = gcSolver.createLine(ln1);
+    var sLn2 = gcSolver.createLine(ln2);
+    var c1 = gcSolver.createDistPtLn(sPt, sLn1, 60);
+    var c2 = gcSolver.createDistPtLn(sPt, sLn2, 20);
+    sLn1.setIsGrounded(true);
+    sLn2.setIsGrounded(true);
+    //sPt.setIsGrounded(true);
+
+    gcSolver.solve();
+
+    var rPt = sPt.geom();
+    var rLn1 = sLn1.geom();
+    var rLn2 = sLn2.geom();
+
+    var dist1 = rLn1.distance(rPt);
+    var dist2 = rLn2.distance(rPt);
+
+    document.write("dist1 = " + dist1 + "<br>");
+    document.write("dist2 = " + dist2 + "<br>");
+
+
+    /*
+    var x = [-1.2, 1.0];
+    newton_solve(rosenbrock, rosenbrockJ, x);
+    var f = rosenbrock(x);
+    
+    document.write("f0=" + f[0] + "   f1=" + f[1] + "<br>");
+    document.write("x0=" + x[0] + "   x1=" + x[1]);
+    */
+}
+
+</script>
+
+</body>
+
+</html>

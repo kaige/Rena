@@ -23,6 +23,21 @@ function skMVector(x, y) {
 	this.setY = function(yval) {
 		this._y = yval;
 	}
+
+	this.normalize = function () {
+	    var len = Math.sqrt(this._x * this._x + this._y * this._y);
+	    this._x = this._x / len;
+	    this._y = this._y / len;
+	}
+
+	this.dot = function (vec) {
+	    var dot = this._x * vec._x + this._y * vec._y;
+	    return dot;
+	}
+
+	this.length = function () {
+	    return Math.sqrt(this._x * this._x + this._y * this._y);
+	}
 }
 
 //-------------------------------------------------
@@ -55,7 +70,39 @@ function skMPoint(x, y) {
 	    this._x += dx;
 	    this._y += dy;
 	}
+
+	this.subtract = function (pt) {
+	    return new skMVector(this._x - pt._x, this._y - pt._y);
+	}
 }
+
+//-------------------------------------------------
+//
+//	math line type
+//
+//-------------------------------------------------
+
+function skMLine(pt, vec) {
+    this._startPt = pt;
+    this._direction = vec;
+    this._direction.normalize();
+
+    this.startPt = function () {
+        return this._startPt;
+    }
+
+    this.direction = function () {
+        return this._direction;
+    }
+
+    this.distance = function (pt) {
+        var q = pt.subtract(this._startPt);
+        var lateral = q.dot(this._direction);
+        var dist = Math.sqrt(q.dot(q) - lateral * lateral);
+        return dist;
+    }
+}
+
 
 //-------------------------------------------------
 //
