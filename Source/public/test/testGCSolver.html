@@ -36,65 +36,10 @@ function rosenbrockJ (x ){
     return J;
 }
 
-function skConDistPtLn(pt, ln, offset) {
-
-    this.getX = function (x) {
-        x[0] = pt.x();
-        x[1] = pt.y();
-        x[2] = ln.startPt().x();
-        x[3] = ln.startPt().y();
-    }
-
-    this.setX = function (x) {
-        pt.setX(x[0]);
-        pt.setY(x[1]);
-        ln.startPt().setX(x[2]);
-        ln.startPt().setY(x[3]);
-    }
-
-    this.func = function (x) {
-        var f = new Array(1);
-        pt.setX(x[0]);
-        pt.setY(x[1]);
-        ln.startPt().setX(x[2]);
-        ln.startPt().setY(x[3]);
-
-        var lnPt = ln.startPt();
-        var lnVec = ln.direction();
-
-        var q = pt.subtract(lnPt);
-        var lateral = q.dot(lnVec);
-        var dist = Math.sqrt(q.dot(q) - lateral * lateral);
-        f[0] = dist - offset;
-        return f;
-    }
-
-    this.deriv = function (x) {
-        var J = new Array(1);
-        J[0] = new Array(4);
-
-        var lnPt = ln.startPt();
-        var lnVec = ln.direction();
-
-        var q = pt.subtract(lnPt);
-        var lateral = q.dot(lnVec);
-        var dist = Math.sqrt(q.dot(q) - lateral * lateral);
-
-        var fac = 1/(dist);
-        
-        J[0][0] = fac * (q.x() - lateral * lnVec.x());
-        J[0][1] = fac * (q.y() - lateral * lnVec.y());
-        J[0][2] = -J[0][0];
-        J[0][3] = -J[0][1];
-
-        return J;
-    }
-}
-
 
 function onLoad() {
 
-    // test constraint solver
+    // test geometric constraint solver
     //
     var pt = new skMPoint(10, 10);
     var start1 = new skMPoint(0, 0);
@@ -127,7 +72,7 @@ function onLoad() {
     document.write("dist2 = " + dist2 + "<br>");
 
 
-    /*
+    /*	// test newton solver
     var x = [-1.2, 1.0];
     newton_solve(rosenbrock, rosenbrockJ, x);
     var f = rosenbrock(x);
