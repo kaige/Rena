@@ -181,8 +181,10 @@ function skCommand() {
 function skCreateGeomCommand() {
     skCommand.call(this);
 
-    var canvas = rnGraphicsManager.drawingCanvas();
-    canvas.style.cursor = "crosshair";
+    this.onMouseMove = function (event) {
+        var canvas = rnGraphicsManager.drawingCanvas();
+        canvas.style.cursor = "crosshair";
+    }
 
     this.onMouseDrag = function (event) {
         var tempPath = this.createPath(event.downPoint, event.point);
@@ -520,7 +522,30 @@ function skCreateDimensionCommand() {
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult && hitResult.item && hitResult.item.dispElement) {
-            
+            var dispElement = hitResult.item.dispElement;
+            var constrGeom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
+            if (constrGeom) {
+                if (constrGeom instanceof skMPoint) {
+                    var message = "point: (";
+                    message += constrGeom.x();
+                    message += ",";
+                    message += constrGeom.y();
+                    message += ")";
+                    alert(message);
+                }
+                else if (constrGeom instanceof skMLineSegment) {
+                    var message = "linesegment: [ (";
+                    message += constrGeom.startPt().x();
+                    message += ",";
+                    message += constrGeom.startPt().y();
+                    message += "), (";
+                    message += constrGeom.endPt().x();
+                    message += ",";
+                    message += constrGeom.endPt().y();
+                    message += ") ]";
+                    alert(message);                    
+                }
+            }
         }
     }
 

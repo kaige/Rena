@@ -185,6 +185,22 @@ function skDispLineSegment(lnSeg) {
         this.setDrawingStyle(tempPathItem, this.skElement());
         return tempPathItem;
     }
+    
+    this.getConstrainableGeometry = function (pathItem, point) {
+        if (pathItem.owningBBoxElement) {
+            var bboxElement = pathItem.owningBBoxElement;
+            if (bboxElement instanceof skBBoxLineEndPt) {
+                return skConv.toMathPoint(pathItem.position);
+            }
+        }
+        else if (pathItem.dispElement) {
+            var pt1 = pathItem.firstSegment.point;
+            var pt2 = pathItem.lastSegment.point;
+            return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
+        }
+        
+        return null;
+    }
 
     this.init();
 }
@@ -221,6 +237,18 @@ function skDispOval(oval) {
         this.setDrawingStyle(tempPathItem, this.skElement());
         return tempPathItem;
     }
+    
+    this.getConstrainableGeometry = function (pathItem, point) {
+        var tol = 2;
+        if (pathItem.dispElement && !pathItem.owningBBox) {
+            var center = pathItem.position;
+            var dist = point.getDistance(center, false);
+            if (dist < tol)
+                return skConv.toMathPoint(center);
+        }
+        
+        return null;
+    }
 
     this.init();
 }
@@ -255,6 +283,23 @@ function skDispRectangle(rect) {
         tempPathItem.rotate(this.skElement().angle(), pt1.add(pt2).multiply(0.5));
         this.setDrawingStyle(tempPathItem, this.skElement());
         return tempPathItem;
+    }
+    
+    this.getConstrainableGeometry = function (pathItem, point) {
+        if (pathItem.owningBBoxElement) {
+            var bboxElement = pathItem.owningBBoxElement;
+            if (bboxElement instanceof skBBoxEdge) {
+                var pt1 = pathItem.firstSegment.point;
+                var pt2 = pathItem.lastSegment.point;
+                return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
+            }
+            else if (bboxElement instanceof skBBoxCornerPt) {
+                var pt = pathItem.position;
+                return skConv.toMathPoint(pt);            
+            }        
+        }
+        
+        return null;
     }
 
     this.init();
