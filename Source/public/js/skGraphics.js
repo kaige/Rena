@@ -21,7 +21,10 @@ function skGraphicsManager() {
 	tool.onKeyDown = function (event) {
 	    if (Key.isDown('escape')) {
 	        rnController.setActiveCommand(new skSelectGeomCommand());
-	    }	    
+	    }
+	    else if (Key.isDown('r')) {
+	        rnController.setActiveCommand(new skCreateRectangleCommand());
+	    }
 	}
 
 	tool.onMouseDown = function (event) {
@@ -220,6 +223,41 @@ function skDispOval(oval) {
 }
 
 skDispOval.prototype = new skDispElement();
+
+//-------------------------------------------------
+//
+//	skDispRectangle
+//
+//-------------------------------------------------
+
+function skDispRectangle(rect) {
+    skDispElement.call(this, rect);
+
+    this.init = function () {
+        var rectElement = this.skElement();
+        var rect = skConv.toPaperRect(rectElement.geom());
+        
+        this._pathItem = new Path.Rectangle(rect);
+        this._pathItem.dispElement = this;
+        this._boundingBox = new skRectBounds(this);
+
+        this._pathItem.rotate(this.skElement().angle(), rect.center);
+        this._boundingBox.rotate(this.skElement().angle());
+
+        this.setDrawingStyle(this._pathItem, this.skElement());
+    }
+
+    this.clonePathItem = function (pt1, pt2) {
+        var tempPathItem = new Path.Rectangle(pt1, pt2);
+        tempPathItem.rotate(this.skElement().angle(), pt1.add(pt2).multiply(0.5));
+        this.setDrawingStyle(tempPathItem, this.skElement());
+        return tempPathItem;
+    }
+
+    this.init();
+}
+
+skDispRectangle.prototype = new skDispElement();
 
 //-------------------------------------------------
 //

@@ -181,6 +181,9 @@ function skCommand() {
 function skCreateGeomCommand() {
     skCommand.call(this);
 
+    var canvas = rnGraphicsManager.drawingCanvas();
+    canvas.style.cursor = "crosshair";
+
     this.onMouseDrag = function (event) {
         var tempPath = this.createPath(event.downPoint, event.point);
         tempPath.strokeColor = 'black';
@@ -277,6 +280,35 @@ function skCreateOvalCommand() {
 }
 
 skCreateOvalCommand.prototype = new skCreateGeomCommand();
+
+//-------------------------------------------------
+//
+//	skCreateOvalCommand
+//
+//-------------------------------------------------
+
+function skCreateRectangleCommand() {
+    skCreateGeomCommand.call(this);
+
+    this.createPath = function (pt1, pt2) {
+        var path = new Path.Rectangle(pt1, pt2);
+        return path;
+    }
+
+    this.createSkElement = function (mpt1, mpt2) {
+        var element = new skRectangle(new skMRectangle(mpt1, mpt2));
+        rnApp.addElement(element);
+        return element;
+    }
+
+    this.populateDispElement = function (skelement) {
+        var dispElement = new skDispRectangle(skelement);
+        rnGraphicsManager.addDispElement(dispElement);
+        return dispElement;
+    }
+}
+
+skCreateRectangleCommand.prototype = new skCreateGeomCommand();
 
 //-------------------------------------------------
 //
@@ -471,3 +503,17 @@ function skRotateGeomCommand(handlePtPathItem) {
 
 skRotateGeomCommand.prototype = new skEditGeomCommand();
 
+//-------------------------------------------------
+//
+//	skCreateDimensionCommand
+//
+//-------------------------------------------------
+
+function skCreateDimensionCommand() {
+    this.onMouseMove = function () {
+
+    }
+
+}
+
+skCreateDimensionCommand.prototype = new skCommand();
