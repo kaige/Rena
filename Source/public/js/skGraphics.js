@@ -25,6 +25,9 @@ function skGraphicsManager() {
 	    else if (Key.isDown('r')) {
 	        rnController.setActiveCommand(new skCreateRectangleCommand());
 	    }
+	    else if (Key.isDown('d')) {
+	        rnController.setActiveCommand(new skCreateDimensionCommand());
+	    }
 	}
 
 	tool.onMouseDown = function (event) {

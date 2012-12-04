@@ -510,8 +510,18 @@ skRotateGeomCommand.prototype = new skEditGeomCommand();
 //-------------------------------------------------
 
 function skCreateDimensionCommand() {
-    this.onMouseMove = function () {
+    var hitOptions = {
+        segments: false,
+        stroke: true,
+        fill: true,
+        tolerance: 5
+    };
 
+    this.onMouseMove = function (event) {
+        var hitResult = project.hitTest(event.point, hitOptions);
+        if (hitResult && hitResult.item && hitResult.item.dispElement) {
+            
+        }
     }
 
 }
