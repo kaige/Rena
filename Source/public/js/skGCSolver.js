@@ -94,7 +94,7 @@ function skGCSolverCon() {
 //
 //-------------------------------------------------
 
-function skDistPtLn(pt, ln, offset) {
+function skGCSDistPtLn(pt, ln, offset) {
     skGCSolverCon.call(this);
 
     this._func = 0;
@@ -148,7 +148,7 @@ function skDistPtLn(pt, ln, offset) {
     }
 }
 
-skDistPtLn.prototype = new skGCSolverCon();
+skGCSDistPtLn.prototype = new skGCSolverCon();
 
 //-------------------------------------------------
 //
@@ -199,7 +199,7 @@ function skGCSolver() {
     }
 
     this.createDistPtLn = function (pt, ln, dist) {
-        var con = new skDistPtLn(pt, ln, dist);
+        var con = new skGCSDistPtLn(pt, ln, dist);
         this.addConstraint(con);
         return con;
     }

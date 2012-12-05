@@ -512,6 +512,10 @@ skRotateGeomCommand.prototype = new skEditGeomCommand();
 //-------------------------------------------------
 
 function skCreateDimensionCommand() {
+    this._selectedGeoms = [];
+    this._dispSelGeoms = [];
+    this._highlightedGeom = null;
+
     var hitOptions = {
         segments: false,
         stroke: true,
@@ -519,34 +523,99 @@ function skCreateDimensionCommand() {
         tolerance: 5
     };
 
+    this.isOKToBeSelected = function (geom) {
+        if (this._selectedGeoms.length == 0)
+            return true;
+        else if (this._selectedGeoms.length == 2)
+            return false;
+        else { // this._selectedGeoms.length == 1
+            var firstGeom = this._selectedGeoms[0];
+
+            // filters of the allowed types of geometries to be selected
+            //
+            if (firstGeom instanceof skMPoint && geom instanceof skMLineSegment ||  //distance-point-line
+                firstGeom instanceof skMLineSegment && geom instanceof skMPoint)
+                return true;
+            else
+                return false;
+        }        
+    }
+
+    this.addSelectedGeom = function (geom) {
+        this._selectedGeoms.push(geom);
+    }
+
+    this.addDispSelGeom = function (dispGeom) {
+        this._dispSelGeoms.push(dispGeom);
+    }
+
+    this.populateDispGeoms = function (mgeom) {
+        var pathItem;
+        if (mgeom instanceof skMPoint) {
+            pathItem = new Path.Circle(skConv.toPaperPoint(mgeom), 3);
+        }
+        else if (mgeom instanceof skMLineSegment) {
+            pathItem = new Path.Line(skConv.toPaperPoint(mgeom.startPt()),
+                                     skConv.toPaperPoint(mgeom.endPt()));
+        }
+
+        return pathItem;
+    }
+
+    this.cleanDispGeoms = function () {
+        var i;
+        for (i = 0; i < this._dispSelGeoms; i++)
+            this._dispSelGeoms[i].remove();
+    }
+
+    this.setHighlightColor = function (pathItem) {
+        pathItem.style = {
+            fillColor: 'red',
+            strokeColor: 'red',
+            strokeWidth: 3
+        };
+    }
+
+    this.setSelectedColor = function (pathItem) {
+        pathItem.style = {
+            fillColor: 'blue',
+            strokeColor: 'blue',
+            strokeWidth: 3
+        }
+    }
+
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
         if (hitResult && hitResult.item && hitResult.item.dispElement) {
             var dispElement = hitResult.item.dispElement;
-            var constrGeom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
-            if (constrGeom) {
-                if (constrGeom instanceof skMPoint) {
-                    var message = "point: (";
-                    message += constrGeom.x();
-                    message += ",";
-                    message += constrGeom.y();
-                    message += ")";
-                    alert(message);
-                }
-                else if (constrGeom instanceof skMLineSegment) {
-                    var message = "linesegment: [ (";
-                    message += constrGeom.startPt().x();
-                    message += ",";
-                    message += constrGeom.startPt().y();
-                    message += "), (";
-                    message += constrGeom.endPt().x();
-                    message += ",";
-                    message += constrGeom.endPt().y();
-                    message += ") ]";
-                    alert(message);                    
-                }
+            var geom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
+            if (geom && this.isOKToBeSelected(geom)) {
+                this._highlightedGeom = geom;
+                var pathItem = this.populateDispGeoms(geom);
+                this.setHighlightColor(pathItem);
+                pathItem.removeOnMove();
             }
         }
+        else {
+            this._highlightedGeom = null;
+        }
+    }
+
+    this.onMouseDown = function (event) {
+        if (this._highlightedGeom) {
+            this.addSelectedGeom(this._highlightedGeom);
+            var pathItem = this.populateDispGeoms(this._highlightedGeom);
+            this.setSelectedColor(pathItem);
+            this.addDispSelGeom(pathItem);
+        }
+
+        if (this._selectedGeoms.length == 2) {
+            // create the dimension object
+        }
+    }
+
+    this.onMouseUp = function (event) {
+        this.cleanDispGeoms();
     }
 
 }

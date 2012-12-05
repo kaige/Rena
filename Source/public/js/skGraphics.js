@@ -239,7 +239,7 @@ function skDispOval(oval) {
     }
     
     this.getConstrainableGeometry = function (pathItem, point) {
-        var tol = 2;
+        var tol = 10;
         if (pathItem.dispElement && !pathItem.owningBBox) {
             var center = pathItem.position;
             var dist = point.getDistance(center, false);
