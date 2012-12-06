@@ -132,6 +132,9 @@ function skController() {
     this._activeCommand = new skSelectGeomCommand();
 
     this.setActiveCommand = function (cmd) {
+        if (this._activeCommand)
+            this._activeCommand.terminate();
+
         this._activeCommand = cmd;
     }
 
@@ -170,6 +173,7 @@ function skCommand() {
     this.onMouseDrag = function (event) { }
     this.onMouseUp = function (event) { }
     this.onMouseMove = function (event) { }
+    this.terminate = function () {}
 }
 
 //-------------------------------------------------
@@ -516,31 +520,6 @@ function skCreateDimensionCommand() {
     this._dispSelGeoms = [];
     this._highlightedGeom = null;
 
-    var hitOptions = {
-        segments: false,
-        stroke: true,
-        fill: true,
-        tolerance: 5
-    };
-
-    this.isOKToBeSelected = function (geom) {
-        if (this._selectedGeoms.length == 0)
-            return true;
-        else if (this._selectedGeoms.length == 2)
-            return false;
-        else { // this._selectedGeoms.length == 1
-            var firstGeom = this._selectedGeoms[0];
-
-            // filters of the allowed types of geometries to be selected
-            //
-            if (firstGeom instanceof skMPoint && geom instanceof skMLineSegment ||  //distance-point-line
-                firstGeom instanceof skMLineSegment && geom instanceof skMPoint)
-                return true;
-            else
-                return false;
-        }        
-    }
-
     this.addSelectedGeom = function (geom) {
         this._selectedGeoms.push(geom);
     }
@@ -564,7 +543,7 @@ function skCreateDimensionCommand() {
 
     this.cleanDispGeoms = function () {
         var i;
-        for (i = 0; i < this._dispSelGeoms; i++)
+        for (i = 0; i < this._dispSelGeoms.length; i++)
             this._dispSelGeoms[i].remove();
     }
 
@@ -583,6 +562,47 @@ function skCreateDimensionCommand() {
             strokeWidth: 3
         }
     }
+
+    this.isOKToBeSelected = function (geom) {
+        if (this._selectedGeoms.length == 0)
+            return true;
+        else if (this._selectedGeoms.length == 1) {
+            var firstGeom = this._selectedGeoms[0];
+            // filters of the allowed types of geometries to be selected
+            //
+            if (firstGeom instanceof skMPoint && geom instanceof skMLineSegment ||  //distance-point-line
+                firstGeom instanceof skMLineSegment && geom instanceof skMPoint)
+                return true;
+            else
+                return false;
+        }
+        else if (this._selectedGeoms.length == 2)
+            return false;
+
+        return false;
+    }
+
+    this.makeDimension = function (element1, mgeom1, element2, mgeom2, type) {
+        var newDim;
+        var newDispDim;
+        if (mgeom1 instanceof skMPoint && mgeom2 instanceof skMLineSegment) {
+            var offset = mgeom2.getLine().distance(mgeom1);
+            newDim = new skDistPtLn(element1, mgeom1, element2, mgeom2, offset);
+            newDispDim = new skDispDistPtLn(newDim);
+        }
+        else if (mgeom2 instanceof skMPoint && mgeom1 instanceof skMLineSegment) {
+            var offset = mgeom1.getLine().distance(mgeom2);
+            newDim = new skDistPtLn(element1, mgeom2, element1, mgeom1, offset);
+            newDispDim = new skDispDistPtLn(newDim);
+        }        
+    }
+
+    var hitOptions = {
+        segments: false,
+        stroke: true,
+        fill: true,
+        tolerance: 5
+    };
 
     this.onMouseMove = function (event) {
         var hitResult = project.hitTest(event.point, hitOptions);
@@ -607,14 +627,19 @@ function skCreateDimensionCommand() {
             var pathItem = this.populateDispGeoms(this._highlightedGeom);
             this.setSelectedColor(pathItem);
             this.addDispSelGeom(pathItem);
-        }
 
-        if (this._selectedGeoms.length == 2) {
-            // create the dimension object
+            if (this._selectedGeoms.length == 2) {
+                // create the dimension object
+            }
+        }
+        else {
+            // put the dimension object down and clear temp highlight path items.
+            //
+            this.cleanDispGeoms();
         }
     }
 
-    this.onMouseUp = function (event) {
+    this.terminate = function () {
         this.cleanDispGeoms();
     }
 

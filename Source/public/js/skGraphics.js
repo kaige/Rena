@@ -775,3 +775,136 @@ function skLinkedList() {
         }
     }
 }
+
+
+
+
+//-------------------------------------------------
+//
+//	skDispConstraint: the display object of dimensions and constraints
+//
+//-------------------------------------------------
+
+function skDispConstraint(skCon) {
+    this._skConstraint = skCon;
+    this._pathItems = [];
+
+    this.pathItems = function () {
+        return this._pathItems;
+    }
+
+}
+
+//-------------------------------------------------
+//
+//	skDispDimension
+//
+//-------------------------------------------------
+
+function skDispDimension(skDim) {
+    skDispConstraint.call(this, skDim);
+
+    this.initDimensionLine = function () { };
+    this.initText = function () { };
+    this.initArrows = function () { };
+
+    this.init = function () {
+        this.initDimensionLine();
+        this.initText();
+        this.initArrows();        
+    }
+
+    this.init();
+
+    // given a point and a vector, create the path item that represent the arrow head
+    //
+    this.initArrow = function (pt, vec) {
+
+    }
+}
+
+skDispDimension.prototype = new skDispConstraint();
+
+//-------------------------------------------------
+//
+//	skDispLinearDimension
+//
+//-------------------------------------------------
+
+function skDispLinearDimension(skDim) {
+    skDispDimension.call(this, skDim);
+}
+
+skDispLinearDimension.prototype = new skDispDimension();
+
+//-------------------------------------------------
+//
+//	skDispDistPtLn
+//
+//-------------------------------------------------
+
+function skDispDistPtLn(skDim) {
+    skDispLinearDimension.call(this, skDim);
+}
+
+skDispDistPtLn.prototype = new skDispLinearDimension();
+
+//-------------------------------------------------
+//
+//	skDispDistPtPt
+//
+//-------------------------------------------------
+
+function skDispDistPtPt() {
+    skDispLinearDimension.call(this);
+}
+
+skDispDistPtPt.prototype = new skDispLinearDimension();
+
+//-------------------------------------------------
+//
+//	skDispDistLnLn
+//
+//-------------------------------------------------
+
+function skDispDistLnLn() {
+    skDispLinearDimension.call(this);
+}
+
+skDispDistLnLn.prototype = new skDispLinearDimension();
+
+//-------------------------------------------------
+//
+//	skDispAngularDimension
+//
+//-------------------------------------------------
+
+function skDispAngularDimension() {
+    skDispDimension.call(this);
+}
+
+skDispAngularDimension.prototype = new skDispDimension();
+
+//-------------------------------------------------
+//
+//	skDispAngLnLn
+//
+//-------------------------------------------------
+
+function skDispAngLnLn() {
+    skDispAngularDimension.call(this);
+}
+
+skDispAngLnLn.prototype = new skDispAngularDimension();
+
+//-------------------------------------------------
+//
+//	skDispGeomConstraint
+//
+//-------------------------------------------------
+
+function skDispGeomConstraint() {
+    skDispConstraint.call(this);
+}
+
+skDispGeomConstraint.prototype = new skDispConstraint();

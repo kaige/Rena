@@ -138,7 +138,12 @@ function skMLineSegment(pt1, pt2) {
 	this.reset = function (pt1, pt2) {
 	    this._startPt = pt1;
 	    this._endPt = pt2;
-	}	
+	}
+
+	this.getLine = function () {
+	    var vec = this._endPt.subtract(this._startPt);
+	    return new skMLine(this._startPt, vec);
+	}
 }
 
 //-------------------------------------------------
