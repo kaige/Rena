@@ -804,22 +804,41 @@ function skDispConstraint(skCon) {
 function skDispDimension(skDim) {
     skDispConstraint.call(this, skDim);
 
-    this.initDimensionLine = function () { };
-    this.initText = function () { };
-    this.initArrows = function () { };
+    this.drawDimensionLine = function () { };
+    this.drawText = function () { };
+    this.drawArrows = function () { };
 
-    this.init = function () {
-        this.initDimensionLine();
-        this.initText();
-        this.initArrows();        
+    this.draw = function () {
+        this.drawDimensionLine();
+        this.drawText();
+        this.drawArrows();        
     }
 
-    this.init();
+    this.draw();
 
     // given a point and a vector, create the path item that represent the arrow head
     //
-    this.initArrow = function (pt, vec) {
-
+    this.drawArrow = function (pt, vec) {
+        var scale = 8;
+        var height = 1.4;
+        var width = 0.8;
+        
+        var pt1 = skConv.toPaperPoint(pt);
+        var negVec = skConv.toPaperPoint(vec).multiply(-1).normalize();
+        var perpVec = new Point(negVec.y, -negVec.x);
+        var mid = pt1.add(negVec.multiply(scale*height));
+        var pt2 = mid.add(perpVec.multiply(scale*width*0.5));
+        var pt3 = mid.add(perpVec.multiply(-1*scale*width*0.5));
+        
+        var path = new Path();
+        path.closed = true;
+        path.add(pt1);
+        path.add(pt2);
+        path.add(pt3);
+        path.style = {
+            fillColor: 'blue',
+            strokeColor: 'blue'
+        }
     }
 }
 
