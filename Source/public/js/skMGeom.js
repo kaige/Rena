@@ -1,5 +1,22 @@
 //-------------------------------------------------
 //
+//	math utilities
+//
+//-------------------------------------------------
+
+var skMath = new (function () {
+    var tol = 0.00001;
+
+    this.isEqual = function (v1, v2) {
+        if (Math.abs(v1 - v2) < tol)
+            return true;
+        else
+            return false;
+    }
+});
+
+//-------------------------------------------------
+//
 //	math vector type
 //
 //-------------------------------------------------
@@ -33,6 +50,10 @@ function skMVector(x, y) {
 	this.dot = function (vec) {
 	    var dot = this._x * vec._x + this._y * vec._y;
 	    return dot;
+	}
+
+	this.multiply = function (d) {
+	    return new skMVector(this._x * d, this._y * d);
 	}
 
 	this.length = function () {
@@ -73,6 +94,16 @@ function skMPoint(x, y) {
 
 	this.subtract = function (pt) {
 	    return new skMVector(this._x - pt._x, this._y - pt._y);
+	}
+
+	this.add = function (vec) {
+	    return new skMPoint(this._x + vec._x, this._y + vec._y);
+	}
+
+	this.distance = function (pt) {
+	    var dx = this._x - pt._x;
+	    var dy = this._y - pt._y;
+	    return Math.sqrt(dx * dx + dy * dy);
 	}
 }
 
@@ -143,6 +174,10 @@ function skMLineSegment(pt1, pt2) {
 	this.getLine = function () {
 	    var vec = this._endPt.subtract(this._startPt);
 	    return new skMLine(this._startPt, vec);
+	}
+
+	this.length = function () {
+	    return this._startPt.distance(this._endPt);
 	}
 }
 

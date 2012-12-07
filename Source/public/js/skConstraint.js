@@ -11,6 +11,22 @@ function skConstraint(element1, geom1, element2, geom2, offset) {
     this._geom2 = geom2;
     this._offset = offset;
 
+    this.geom1 = function () {
+        return this._geom1;
+    }
+
+    this.geom2 = function () {
+        return this._geom2;
+    }
+
+    this.element1 = function () {
+        this._element1;
+    }
+
+    this.element2 = function () {
+        this._element2;
+    }
+
     this.offset = function () {
         return this._offset;
     }

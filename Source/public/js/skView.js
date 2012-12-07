@@ -519,6 +519,7 @@ function skCreateDimensionCommand() {
     this._selectedGeoms = [];
     this._dispSelGeoms = [];
     this._highlightedGeom = null;
+    this._newDim = null;
 
     this.addSelectedGeom = function (geom) {
         this._selectedGeoms.push(geom);
@@ -545,6 +546,13 @@ function skCreateDimensionCommand() {
         var i;
         for (i = 0; i < this._dispSelGeoms.length; i++)
             this._dispSelGeoms[i].remove();
+    }
+
+    this.clear = function () {
+        this._selectedGeoms.splice(0, this._selectedGeoms.length);
+        this._dispSelGeoms.splice(0, this._dispSelGeoms.length);
+        this._highlightedGeom = null;
+        this._newDim = null;
     }
 
     this.setHighlightColor = function (pathItem) {
@@ -582,7 +590,7 @@ function skCreateDimensionCommand() {
         return false;
     }
 
-    this.makeDimension = function (element1, mgeom1, element2, mgeom2, type) {
+    this.makeDimension = function (element1, mgeom1, element2, mgeom2) {
         var newDim;
         var newDispDim;
         if (mgeom1 instanceof skMPoint && mgeom2 instanceof skMLineSegment) {
@@ -594,7 +602,10 @@ function skCreateDimensionCommand() {
             var offset = mgeom1.getLine().distance(mgeom2);
             newDim = new skDistPtLn(element1, mgeom2, element1, mgeom1, offset);
             newDispDim = new skDispDistPtLn(newDim);
-        }        
+        }
+
+        this._newDim = newDim;
+        return this._newDim;
     }
 
     var hitOptions = {
@@ -605,19 +616,33 @@ function skCreateDimensionCommand() {
     };
 
     this.onMouseMove = function (event) {
-        var hitResult = project.hitTest(event.point, hitOptions);
-        if (hitResult && hitResult.item && hitResult.item.dispElement) {
-            var dispElement = hitResult.item.dispElement;
-            var geom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
-            if (geom && this.isOKToBeSelected(geom)) {
-                this._highlightedGeom = geom;
-                var pathItem = this.populateDispGeoms(geom);
-                this.setHighlightColor(pathItem);
-                pathItem.removeOnMove();
+        this._highlightedGeom = null;
+
+        if (!this._newDim) {
+            var hitResult = project.hitTest(event.point, hitOptions);
+            if (hitResult && hitResult.item && hitResult.item.dispElement) {
+                var dispElement = hitResult.item.dispElement;
+                var geom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
+                if (geom && this.isOKToBeSelected(geom)) {
+                    this._highlightedGeom = geom;
+                    this._highlightedGeom.skElement = dispElement.skElement();
+                    var pathItem = this.populateDispGeoms(geom);
+                    this.setHighlightColor(pathItem);
+                    pathItem.removeOnMove();
+                }
             }
         }
         else {
-            this._highlightedGeom = null;
+            this._newDim.dispConstraint.draw(event.point);
+
+            var pathItems = this._newDim.dispConstraint.pathItems();
+            var i;
+            for (i = 0; i < pathItems.length; i++) {
+                pathItems[i].removeOnMove();
+                pathItems[i].removeOnUp();
+            }
+
+            this._newDim.dispConstraint.clearPathItems();
         }
     }
 
@@ -630,12 +655,30 @@ function skCreateDimensionCommand() {
 
             if (this._selectedGeoms.length == 2) {
                 // create the dimension object
+                var newDim = this.makeDimension(this._selectedGeoms[0].skElement,
+                                                this._selectedGeoms[0],
+                                                this._selectedGeoms[1].skElement,
+                                                this._selectedGeoms[1]);
+
+                newDim.dispConstraint.draw(event.downPoint);
+
+                var pathItems = newDim.dispConstraint.pathItems();
+                var i;
+                for (i = 0; i < pathItems.length; i++) {
+                    pathItems[i].removeOnMove();
+                    pathItems[i].removeOnUp();
+                }
+
+                newDim.dispConstraint.clearPathItems();
             }
         }
         else {
             // put the dimension object down and clear temp highlight path items.
             //
             this.cleanDispGeoms();
+            this._newDim.dispConstraint.draw(event.downPoint);
+
+            this.clear();        // clear so we can create another dimension
         }
     }
 

@@ -788,11 +788,30 @@ function skLinkedList() {
 function skDispConstraint(skCon) {
     this._skConstraint = skCon;
     this._pathItems = [];
+    if (skCon)
+        skCon.dispConstraint = this;
 
     this.pathItems = function () {
         return this._pathItems;
     }
 
+    this.addPathItem = function (item) {
+        this._pathItems.push(item);
+    }
+
+    this.clearPathItems = function () {
+        this._pathItems.splice(0, this._pathItems.length);
+    }
+
+    this.applyPathStyle = function () {
+        var i;
+        for (i = 0; i < this._pathItems.length; i++) {
+            this._pathItems[i].style = {
+                fillColor: 'green',
+                strokeColor: 'green'
+            }
+        }
+    }
 }
 
 //-------------------------------------------------
@@ -803,18 +822,23 @@ function skDispConstraint(skCon) {
 
 function skDispDimension(skDim) {
     skDispConstraint.call(this, skDim);
+    this._textPos = null;
 
-    this.drawDimensionLine = function () { };
-    this.drawText = function () { };
+    this.evaluateDefPoints = function (pos) { };
+    this.drawDimensionLines = function () { };
     this.drawArrows = function () { };
+    this.drawText = function () { };
 
-    this.draw = function () {
-        this.drawDimensionLine();
+    this.draw = function (pos) {
+        this._textPos = pos;
+        this.evaluateDefPoints(pos);
+
+        this.drawDimensionLines();
+        this.drawArrows();
         this.drawText();
-        this.drawArrows();        
-    }
 
-    this.draw();
+        this.applyPathStyle();
+    }
 
     // given a point and a vector, create the path item that represent the arrow head
     //
@@ -823,8 +847,8 @@ function skDispDimension(skDim) {
         var height = 1.4;
         var width = 0.8;
         
-        var pt1 = skConv.toPaperPoint(pt);
-        var negVec = skConv.toPaperPoint(vec).multiply(-1).normalize();
+        var pt1 = pt;
+        var negVec = vec.multiply(-1).normalize();
         var perpVec = new Point(negVec.y, -negVec.x);
         var mid = pt1.add(negVec.multiply(scale*height));
         var pt2 = mid.add(perpVec.multiply(scale*width*0.5));
@@ -835,10 +859,8 @@ function skDispDimension(skDim) {
         path.add(pt1);
         path.add(pt2);
         path.add(pt3);
-        path.style = {
-            fillColor: 'blue',
-            strokeColor: 'blue'
-        }
+
+        this.addPathItem(path);
     }
 }
 
@@ -852,6 +874,92 @@ skDispDimension.prototype = new skDispConstraint();
 
 function skDispLinearDimension(skDim) {
     skDispDimension.call(this, skDim);
+
+    this._dimPt1 = null;
+    this._dimPt2 = null;
+    this._leadPt1 = null;
+    this._leadPt2 = null;
+
+    this.getDimPt1 = function () {
+        return this._dimPt1;
+    }
+
+    this.getDimPt2 = function () {
+        return this._dimPt2;
+    }
+
+    this.getLeadPt1 = function () {
+        return this._leadPt1;
+    }
+
+    this.getLeadPt2 = function () {
+        return this._leadPt2;
+    }
+
+    this.drawDimensionLines = function () {
+        var dimPt1 = skConv.toPaperPoint(this.getDimPt1());
+        var dimPt2 = skConv.toPaperPoint(this.getDimPt2());
+        var leadPt1 = skConv.toPaperPoint(this.getLeadPt1());
+        var leadPt2 = skConv.toPaperPoint(this.getLeadPt2());
+        
+        var pt1, pt2;
+        var pos = this._textPos;
+        var d1 = pos.getDistance(dimPt1, false);
+        var d2 = pos.getDistance(dimPt2, false);
+        var d3 = dimPt1.getDistance(dimPt2, false);
+        if (skMath.isEqual(d1 + d2, d3)) {
+            pt1 = dimPt1;
+            pt2 = dimPt2;
+        }
+        else {
+            pt1 =  pos;
+            if (d1 > d2)
+                pt2 = dimPt1;
+            else
+                pt2 = dimPt2;
+        }
+
+        this.addPathItem(new Path.Line(pt1, pt2));
+        this.addPathItem(new Path.Line(leadPt1, dimPt1));
+        this.addPathItem(new Path.Line(leadPt2, dimPt2));
+    }
+
+    this.drawText = function () {
+        var pos = this._textPos;
+        var text = new PointText(pos);
+        text.justification = 'center';
+        text.fillColor = 'green';
+        text.content = this._skConstraint.offset().toFixed(3).toString();
+
+        // rotate the text to align with dimension line
+        //
+        var dimPt1 = skConv.toPaperPoint(this.getDimPt1());
+        var dimPt2 = skConv.toPaperPoint(this.getDimPt2());
+        var vec = dimPt2.subtract(dimPt1).normalize();
+        var xAxis = new Point(1, 0)
+        if (vec.dot(xAxis) < 0)
+            vec = vec.multiply(-1);
+        var angle = xAxis.getAngle(vec);
+        text.rotate(angle, pos);
+
+        // move the text a little bit above the dimension line so it looks more clear
+        //
+        var yAxis = new Point(0, -1);
+        var newY = yAxis.rotate(angle, new Point(0, 0));
+        var scale = 4;
+        text.translate(newY.multiply(scale));
+
+        this.addPathItem(text);
+    }
+
+    this.drawArrows = function () {
+        var dimPt1 = skConv.toPaperPoint(this.getDimPt1());
+        var dimPt2 = skConv.toPaperPoint(this.getDimPt2());
+        var vec1 = dimPt1.subtract(dimPt2);
+        var vec2 = dimPt2.subtract(dimPt1);
+        this.drawArrow(dimPt1, vec1);
+        this.drawArrow(dimPt2, vec2);
+    }
 }
 
 skDispLinearDimension.prototype = new skDispDimension();
@@ -864,6 +972,45 @@ skDispLinearDimension.prototype = new skDispDimension();
 
 function skDispDistPtLn(skDim) {
     skDispLinearDimension.call(this, skDim);
+
+    this.evaluateDefPoints = function (pos) {
+        var mPt, mLnSeg;
+
+        var skDim = this._skConstraint;
+        if (skDim.geom1() instanceof skMPoint) {
+            mPt = skDim.geom1();
+            mLnSeg = skDim.geom2();
+        }
+        else {
+            mPt = skDim.geom2();
+            mLnSeg = skDim.geom1();
+        }
+
+        var mLn = mLnSeg.getLine();
+
+        var q = mPt.subtract(mLn.startPt());
+        var lateral = q.dot(mLn.direction());
+        var projectionPt = mLn.startPt().add(mLn.direction().multiply(lateral));
+        var vec = mPt.subtract(projectionPt);
+
+        var q1 = skConv.toMathPoint(pos).subtract(mLn.startPt());
+        var lateral1 = q1.dot(mLn.direction());
+        this._dimPt1 = mLn.startPt().add(mLn.direction().multiply(lateral1));
+
+        var dist1 = this._dimPt1.distance(mLnSeg.startPt());
+        var dist2 = this._dimPt1.distance(mLnSeg.endPt());
+        if (skMath.isEqual(dist1 + dist2, mLnSeg.length()))
+            this._leadPt1 = this._dimPt1;
+        else {
+            if (dist1 < dist2)
+                this._leadPt1 = mLnSeg.startPt();
+            else
+                this._leadPt1 = mLnSeg.endPt();
+        }
+
+        this._leadPt2 = mPt;
+        this._dimPt2 = this._dimPt1.add(vec);
+    }
 }
 
 skDispDistPtLn.prototype = new skDispLinearDimension();
