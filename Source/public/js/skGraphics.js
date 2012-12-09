@@ -939,7 +939,7 @@ function skDispLinearDimension(skDim) {
         var xAxis = new Point(1, 0)
         if (vec.dot(xAxis) < 0)
             vec = vec.multiply(-1);
-        var angle = xAxis.getAngle(vec);
+        var angle = xAxis.getDirectedAngle(vec);
         text.rotate(angle, pos);
 
         // move the text a little bit above the dimension line so it looks more clear
