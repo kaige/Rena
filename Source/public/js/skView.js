@@ -521,6 +521,9 @@ function skCreateDimensionCommand() {
     this._highlightedGeom = null;
     this._newDispDim = null;
 
+    var canvas = rnGraphicsManager.drawingCanvas();
+    canvas.style.cursor = "default"; 
+
     this.addSelectedGeom = function (geom) {
         this._selectedGeoms.push(geom);
     }
@@ -633,6 +636,7 @@ function skCreateDimensionCommand() {
                 if (geom && this.isOKToBeSelected(geom)) {
                     this._highlightedGeom = geom;
                     this._highlightedGeom.skElement = dispElement.skElement();
+                    this._highlightedGeom.pathItem = hitResult.item;
                     var pathItem = this.populateDispGeoms(geom);
                     this.setHighlightColor(pathItem);
                     pathItem.removeOnMove();
@@ -662,30 +666,51 @@ function skCreateDimensionCommand() {
 
             if (this._selectedGeoms.length == 2) {
                 // create the dimension object
-                var newDispDim = this.makeDimension(this._selectedGeoms[0].skElement,
-                                                this._selectedGeoms[0],
-                                                this._selectedGeoms[1].skElement,
-                                                this._selectedGeoms[1]);
+                this.makeDimension(this._selectedGeoms[0].skElement,
+                                   this._selectedGeoms[0],
+                                   this._selectedGeoms[1].skElement,
+                                   this._selectedGeoms[1]);
 
-                newDispDim.draw(event.downPoint);
+                this._newDispDim.draw(event.downPoint);
 
-                var pathItems = newDispDim.pathItems();
+                var pathItems = this._newDispDim.pathItems();
                 var i;
                 for (i = 0; i < pathItems.length; i++) {
                     pathItems[i].removeOnMove();
                     pathItems[i].removeOnUp();
                 }
 
-                newDispDim.clearPathItems();
+                this._newDispDim.clearPathItems();
             }
         }
         else {
-            // put the dimension object down and clear temp highlight path items.
-            //
-            this.cleanDispGeoms();
-            this._newDispDim.draw(event.downPoint);
+            if (this._selectedGeoms.length == 2) {
+                // put the dimension object down and clear temp highlight path items.
+                //
+                this.cleanDispGeoms();
+                this._newDispDim.draw(event.downPoint);
 
-            this.clear();        // clear so we can create another dimension
+                // move the selected path item (in most time they're invisible) above the dimension path items
+                // so the next time's hit test can still hit the selected geometry easily
+                // this is a workaround to the limitation of paper.js library
+                //
+                var allDimItems = this._newDispDim.pathItems();
+                var i;
+                var mostAboveItem = allDimItems[0];
+                for (i = 1; i < allDimItems.length; i++) {
+                    if (allDimItems[i].isAbove(mostAboveItem))
+                        mostAboveItem = allDimItems[i];
+                }
+
+                var selItem1 = this._selectedGeoms[0].pathItem;
+                var selItem2 = this._selectedGeoms[1].pathItem;
+                selItem1.moveAbove(mostAboveItem);
+                selItem2.moveAbove(mostAboveItem);
+
+                // clear so we can create another dimension
+                //
+                this.clear();
+            }
         }
     }
 

@@ -161,6 +161,18 @@ function skDispElement(element) {
 
 //-------------------------------------------------
 //
+//	skInvisibleCenterPoint
+//
+//-------------------------------------------------
+
+function skInvisibleCenterPoint(pt, owningDispElement) {
+    this._pathItem = new Path.Circle(pt, 4);
+    this._pathItem.invisibleCenter = true;
+    this._pathItem.dispElement = owningDispElement;
+}
+
+//-------------------------------------------------
+//
 //	skDispLineSegment
 //
 //-------------------------------------------------
@@ -229,6 +241,8 @@ function skDispOval(oval) {
         this._boundingBox.rotate(this.skElement().angle());
 
         this.setDrawingStyle(this._pathItem, this.skElement());
+
+        this._invisibleCenter = new skInvisibleCenterPoint(rect.center, this);
     }
 
     this.clonePathItem = function (pt1, pt2) {
@@ -239,14 +253,10 @@ function skDispOval(oval) {
     }
     
     this.getConstrainableGeometry = function (pathItem, point) {
-        var tol = 10;
-        if (pathItem.dispElement && !pathItem.owningBBox) {
+        if (pathItem.invisibleCenter) {
             var center = pathItem.position;
-            var dist = point.getDistance(center, false);
-            if (dist < tol)
-                return skConv.toMathPoint(center);
-        }
-        
+            return skConv.toMathPoint(center);
+        }        
         return null;
     }
 
