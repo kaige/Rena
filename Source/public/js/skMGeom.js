@@ -1,5 +1,22 @@
 //-------------------------------------------------
 //
+//	math utilities
+//
+//-------------------------------------------------
+
+var skMath = new (function () {
+    var tol = 0.00001;
+
+    this.isEqual = function (v1, v2) {
+        if (Math.abs(v1 - v2) < tol)
+            return true;
+        else
+            return false;
+    }
+});
+
+//-------------------------------------------------
+//
 //	math vector type
 //
 //-------------------------------------------------
@@ -22,6 +39,25 @@ function skMVector(x, y) {
 	
 	this.setY = function(yval) {
 		this._y = yval;
+	}
+
+	this.normalize = function () {
+	    var len = Math.sqrt(this._x * this._x + this._y * this._y);
+	    this._x = this._x / len;
+	    this._y = this._y / len;
+	}
+
+	this.dot = function (vec) {
+	    var dot = this._x * vec._x + this._y * vec._y;
+	    return dot;
+	}
+
+	this.multiply = function (d) {
+	    return new skMVector(this._x * d, this._y * d);
+	}
+
+	this.length = function () {
+	    return Math.sqrt(this._x * this._x + this._y * this._y);
 	}
 }
 
@@ -55,7 +91,49 @@ function skMPoint(x, y) {
 	    this._x += dx;
 	    this._y += dy;
 	}
+
+	this.subtract = function (pt) {
+	    return new skMVector(this._x - pt._x, this._y - pt._y);
+	}
+
+	this.add = function (vec) {
+	    return new skMPoint(this._x + vec._x, this._y + vec._y);
+	}
+
+	this.distance = function (pt) {
+	    var dx = this._x - pt._x;
+	    var dy = this._y - pt._y;
+	    return Math.sqrt(dx * dx + dy * dy);
+	}
 }
+
+//-------------------------------------------------
+//
+//	math line type
+//
+//-------------------------------------------------
+
+function skMLine(pt, vec) {
+    this._startPt = pt;
+    this._direction = vec;
+    this._direction.normalize();
+
+    this.startPt = function () {
+        return this._startPt;
+    }
+
+    this.direction = function () {
+        return this._direction;
+    }
+
+    this.distance = function (pt) {
+        var q = pt.subtract(this._startPt);
+        var lateral = q.dot(this._direction);
+        var dist = Math.sqrt(q.dot(q) - lateral * lateral);
+        return dist;
+    }
+}
+
 
 //-------------------------------------------------
 //
@@ -91,7 +169,16 @@ function skMLineSegment(pt1, pt2) {
 	this.reset = function (pt1, pt2) {
 	    this._startPt = pt1;
 	    this._endPt = pt2;
-	}	
+	}
+
+	this.getLine = function () {
+	    var vec = this._endPt.subtract(this._startPt);
+	    return new skMLine(this._startPt, vec);
+	}
+
+	this.length = function () {
+	    return this._startPt.distance(this._endPt);
+	}
 }
 
 //-------------------------------------------------
