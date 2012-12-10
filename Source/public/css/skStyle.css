@@ -1,9 +1,7 @@
 #tool_bar
 {
-    position:fixed;
     top:10px;
     left:30px;
-    height: 100px;
     width: 940px;
     border: 1px solid #101010;
     box-shadow: 1px 1px 0px #707070;
@@ -11,9 +9,26 @@
     border-radius:2px;
 }
 
+.tool_bar
+{
+	margin: 10px 0 10px 0px;
+	box-shadow: 1px 1px 0px #707070;
+    background-color: #FAFAFA;
+    border-radius:2px;
+	height: 65px;
+}
+
+.tool_bar_group
+{
+	margin: 1px;
+	width: 120px;
+	height: 80px;
+	border: 1px solid #B8B5B5;
+	border-radius: 2px;
+}
+
 #drawing_tool
 {
-    position:fixed;
     top:15px;
     left:40px;
     height: 80px;
@@ -45,7 +60,6 @@
 
 #drawing_background
 {
-    position:fixed;
     top:130px;
     left:0px;
     height:2000px;
@@ -55,7 +69,7 @@
 
 #drawing_area
 {
-    position:fixed;
+	margin: 5px;
     top:150px;
     left:50px;
     height:600px;

@@ -4,12 +4,13 @@
 
     /* Base class for all icon elements. */
     .icon {
-      height: 21px;
-      width: 21px;
+      height: 20px;
+      width: 20px;
       /* background-image: url(../3p/closure-library/closure/goog/images/toolbar_icons.gif); */
       background-repeat: no-repeat;
       /* vertical-align: middle; */
-
+      background-size: contain;
+	  margin: 0;
       
     }
 
@@ -62,6 +63,10 @@
 	}
 	.toolbar-circle {
 		background-image: url(../img/toolbar/circle.png);
+	}
+	
+	.toolbar-rectangle {
+		background-image: url(../img/toolbar/rectangle.png);
 	}
 
     /* Italic. */

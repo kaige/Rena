@@ -4,13 +4,14 @@
 <head>
 <meta charset="UTF-8">
 <title>Project Rena: An Online 2D Drawing Tool with Constraints and Dimensions</title>
+
+<!-- FOR TOOLBAR -->
+<link rel="stylesheet" href="3p/closure-library/closure/goog/demos/css/demo.css">
+<link rel="stylesheet" href="3p/closure-library/closure/goog/css/toolbar.css">
+<link rel="stylesheet" href="css/testtoolbar.css">
+	
 <link rel="stylesheet" type="text/css" href="css/skStyle.css" />
-<script type="text/javascript"  src="js/skMGeom.js"></script>
-<script type="text/javascript"  src="js/skElement.js"></script>
-<script type="text/javascript"  src="js/skApp.js"></script>
-<script type="text/javascript"  src="js/3p/paper.js"></script>
-<script type="text/javascript"  src="js/skGraphics.js"> </script>
-<script type="text/javascript"  src="js/skView.js"></script> 
+
 </head>
 
 <body>
@@ -21,11 +22,47 @@
     </div>
 </div>
 
+<div id="tool_bar2" class="tool_bar">
+		<div id="tool_bar_group1_div" ></div>
+</div>
+	
+<!-- <div id="tool_bar2" class="tool_bar">
+	<div id="tool_bar_group1" class="tool_bar_group">
+		<div id="tool_bar_group1_div" ></div>
+	</div>
+	<div id="tool_bar_group2" class="tool_bar_group">
+		<div id="tool_bar_group2_div" ></div>
+	</div>
+	<div id="tool_bar_group3" class="tool_bar_group">
+		<div id="tool_bar_group3_div" ></div>
+	</div>
+</div> -->
+
 <div id="drawing_background"> 
     <div id="drawing_area">
         <canvas id="drawing_canvas" resize="true"> Your browser does not support the HTML 5 Canvas. </canvas>
     </div>
 </div>
+
+<!-- SCRIPT AT BOTTOM -->
+<script src="3p/closure-library/closure/goog/base.js"></script>
+<script>
+	goog.require('goog.ui.Toolbar');
+    goog.require('goog.ui.ToolbarRenderer');
+    goog.require('goog.ui.ToolbarButton');
+    goog.require('goog.ui.ToolbarMenuButton');
+    goog.require('goog.ui.ToolbarSelect');
+    goog.require('goog.ui.ToolbarSeparator');
+    goog.require('goog.ui.ToolbarToggleButton');
+</script>
+<script src="js/testToolbar.js"></script>
+
+<script type="text/javascript"  src="js/skMGeom.js"></script>
+<script type="text/javascript"  src="js/skElement.js"></script>
+<script type="text/javascript"  src="js/skApp.js"></script>
+<script type="text/javascript"  src="js/3p/paper.js"></script>
+<script type="text/javascript"  src="js/skGraphics.js"> </script>
+<script type="text/javascript"  src="js/skView.js"></script> 
 
 </body>
 
