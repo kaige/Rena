@@ -519,7 +519,7 @@ function skCreateDimensionCommand() {
     this._selectedGeoms = [];
     this._dispSelGeoms = [];
     this._highlightedGeom = null;
-    this._newDim = null;
+    this._newDispDim = null;
 
     this.addSelectedGeom = function (geom) {
         this._selectedGeoms.push(geom);
@@ -552,7 +552,7 @@ function skCreateDimensionCommand() {
         this._selectedGeoms.splice(0, this._selectedGeoms.length);
         this._dispSelGeoms.splice(0, this._dispSelGeoms.length);
         this._highlightedGeom = null;
-        this._newDim = null;
+        this._newDispDim = null;
     }
 
     this.setHighlightColor = function (pathItem) {
@@ -593,6 +593,9 @@ function skCreateDimensionCommand() {
     this.makeDimension = function (element1, mgeom1, element2, mgeom2) {
         var newDim;
         var newDispDim;
+
+        // distance-point-line
+        //
         if (mgeom1 instanceof skMPoint && mgeom2 instanceof skMLineSegment) {
             var offset = mgeom2.getLine().distance(mgeom1);
             newDim = new skDistPtLn(element1, mgeom1, element2, mgeom2, offset);
@@ -603,9 +606,13 @@ function skCreateDimensionCommand() {
             newDim = new skDistPtLn(element1, mgeom2, element1, mgeom1, offset);
             newDispDim = new skDispDistPtLn(newDim);
         }
+        // distance-point-point
+        //
 
-        this._newDim = newDim;
-        return this._newDim;
+        // distance-line-line
+
+        this._newDispDim = newDispDim;
+        return this._newDispDim;
     }
 
     var hitOptions = {
@@ -618,7 +625,7 @@ function skCreateDimensionCommand() {
     this.onMouseMove = function (event) {
         this._highlightedGeom = null;
 
-        if (!this._newDim) {
+        if (!this._newDispDim) {
             var hitResult = project.hitTest(event.point, hitOptions);
             if (hitResult && hitResult.item && hitResult.item.dispElement) {
                 var dispElement = hitResult.item.dispElement;
@@ -633,16 +640,16 @@ function skCreateDimensionCommand() {
             }
         }
         else {
-            this._newDim.dispConstraint.draw(event.point);
+            this._newDispDim.draw(event.point);
 
-            var pathItems = this._newDim.dispConstraint.pathItems();
+            var pathItems = this._newDispDim.pathItems();
             var i;
             for (i = 0; i < pathItems.length; i++) {
                 pathItems[i].removeOnMove();
                 pathItems[i].removeOnUp();
             }
 
-            this._newDim.dispConstraint.clearPathItems();
+            this._newDispDim.clearPathItems();
         }
     }
 
@@ -655,28 +662,28 @@ function skCreateDimensionCommand() {
 
             if (this._selectedGeoms.length == 2) {
                 // create the dimension object
-                var newDim = this.makeDimension(this._selectedGeoms[0].skElement,
+                var newDispDim = this.makeDimension(this._selectedGeoms[0].skElement,
                                                 this._selectedGeoms[0],
                                                 this._selectedGeoms[1].skElement,
                                                 this._selectedGeoms[1]);
 
-                newDim.dispConstraint.draw(event.downPoint);
+                newDispDim.draw(event.downPoint);
 
-                var pathItems = newDim.dispConstraint.pathItems();
+                var pathItems = newDispDim.pathItems();
                 var i;
                 for (i = 0; i < pathItems.length; i++) {
                     pathItems[i].removeOnMove();
                     pathItems[i].removeOnUp();
                 }
 
-                newDim.dispConstraint.clearPathItems();
+                newDispDim.clearPathItems();
             }
         }
         else {
             // put the dimension object down and clear temp highlight path items.
             //
             this.cleanDispGeoms();
-            this._newDim.dispConstraint.draw(event.downPoint);
+            this._newDispDim.draw(event.downPoint);
 
             this.clear();        // clear so we can create another dimension
         }

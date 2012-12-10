@@ -788,8 +788,6 @@ function skLinkedList() {
 function skDispConstraint(skCon) {
     this._skConstraint = skCon;
     this._pathItems = [];
-    if (skCon)
-        skCon.dispConstraint = this;
 
     this.pathItems = function () {
         return this._pathItems;
