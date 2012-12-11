@@ -53,24 +53,20 @@
 
 #drawing_canvas
 {
-    position:fixed;
-    top:130px;
+    position:relative;
     left:0px;
 }
 
 #drawing_background
 {
-    top:130px;
     left:0px;
-    height:2000px;
-    width:2000px;
+    height:1300px;
     background-color:#C3C7CB
 }
 
 #drawing_area
 {
 	margin: 5px;
-    top:150px;
     left:50px;
     height:600px;
     width:900px;

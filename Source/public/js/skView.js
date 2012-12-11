@@ -23,9 +23,23 @@ function onLoad() {
 
 function skView() {
 	this._createGeomBtnGrp = new skRadioButtonGroup();
-	this._createGeomBtnGrp.addRadioButton(new skImgButton("line_btn", "img\\line.png", "img\\line_highlight.png", "img\\line_select.png"));
-	this._createGeomBtnGrp.addRadioButton(new skImgButton("oval_btn", "img\\oval.png", "img\\oval_highlight.png", "img\\oval_select.png"));
-
+	// this._createGeomBtnGrp.addRadioButton(new skImgButton("line_btn", "img\\line.png", "img\\line_highlight.png", "img\\line_select.png"));
+	// this._createGeomBtnGrp.addRadioButton(new skImgButton("oval_btn", "img\\oval.png", "img\\oval_highlight.png", "img\\oval_select.png"));
+	
+	// Create toolbar buttons
+	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
+	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateLineSegment());
+	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateOval());
+	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateRectangle());
+	
+	// Initial toolbar
+	this._toolbar = new goog.ui.Toolbar();	
+	var toolbartemp = this._toolbar;
+	goog.array.forEach(this._createGeomBtnGrp._radioButtons, function (btn, index, array) {
+		btn.createButton(toolbartemp);
+    });
+	this._toolbar.render(goog.dom.getElement('tool_bar_group1_div'));
+	
 	this.deSelectAllButtons = function () {
 	    // this is a temporary implementation
 	    //
@@ -53,7 +67,6 @@ function skRadioButtonGroup() {
 			var btn = this._radioButtons[i];
 			if (btn !== selectedBtn) {
 				btn.setSelected(false);
-				btn.init();
 			}			
 		}			
 	}
@@ -120,6 +133,74 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 	this._obj.onmouseover = this.onMouseOver;
 	this._obj.onmouseout = this.onMouseOut;
 	this._obj.onclick = this.onMouseClick;
+}
+
+function skCmdDef(id, tooltip, classname) {
+	this._id = id;
+	this._obj = document.getElementById(id);
+	this._tooltip = tooltip;
+	this._classname = classname;
+	this._btn = null;
+	
+	var that = this;
+	
+	this.obj = function () {
+		return that._obj;
+	}
+	
+	this.setSelected = function(p) {
+		that._btn.setChecked(p);
+	}
+	
+	this.createButton = function(toolbar) {
+		that._btn = new goog.ui.ToolbarToggleButton(goog.dom.createDom('div', that._classname));		
+		that._btn.setTooltip(that._tooltip);
+        toolbar.addChild(that._btn, true);
+		
+		goog.events.listen(that._btn, goog.ui.Component.EventType.ACTION, that.onMouseClickEX);		
+	}
+	this.createCommand = function() {
+		return null;
+	}
+	
+	this.onMouseClickEX = function() {
+		if (rnController.activeCommand() != that) {
+			that._parentGroup.onSetSelected(that);
+		}
+		var cmd = that.createCommand();
+		rnController.setActiveCommand(cmd);
+	}
+}
+
+function skCmdDefCreatePoint() {
+	skCmdDef.call(this, "Point", "point", "icon toolbar-point");
+	
+	this.createCommand = function() {
+		return null;
+	}
+}
+
+function skCmdDefCreateRectangle() {
+	skCmdDef.call(this, "Rectangle", "rectangle", "icon toolbar-rectangle");
+	
+	this.createCommand = function() {
+		return null;
+	}
+}
+
+function skCmdDefCreateLineSegment() {
+	skCmdDef.call(this, "Line", "line", "icon toolbar-line");
+	
+	this.createCommand = function() {
+		return new skCreateLineSegmentCommand();
+	}
+}
+function skCmdDefCreateOval() {
+	skCmdDef.call(this, "Circle", "circle", "icon toolbar-circle");
+	
+	this.createCommand = function() {
+		return new skCreateOvalCommand();
+	}
 }
 
 //-------------------------------------------------
