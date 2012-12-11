@@ -27,10 +27,12 @@ function skView() {
 	// this._createGeomBtnGrp.addRadioButton(new skImgButton("oval_btn", "img\\oval.png", "img\\oval_highlight.png", "img\\oval_select.png"));
 	
 	// Create toolbar buttons
-	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
+	//this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
 	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateLineSegment());
+	//this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateCircle());
 	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateOval());
 	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateRectangle());
+	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateDimension());
 	
 	// Initial toolbar
 	this._toolbar = new goog.ui.Toolbar();	
@@ -135,6 +137,12 @@ function skImgButton (id, normalImg, highlightImg, selectImg) {
 	this._obj.onclick = this.onMouseClick;
 }
 
+//-------------------------------------------------
+//
+//	skCmdDef: command definition
+//  (name, tooltip, classname, and related command)
+//
+//-------------------------------------------------
 function skCmdDef(id, tooltip, classname) {
 	this._id = id;
 	this._obj = document.getElementById(id);
@@ -157,9 +165,10 @@ function skCmdDef(id, tooltip, classname) {
 		that._btn.setTooltip(that._tooltip);
         toolbar.addChild(that._btn, true);
 		
-		goog.events.listen(that._btn, goog.ui.Component.EventType.ACTION, that.onMouseClickEX);		
+		goog.events.listen(that._btn, goog.ui.Component.EventType.ACTION, that.onMouseClickEX);
 	}
 	this.createCommand = function() {
+		prompt("Sorry, haven't implemented yet");
 		return null;
 	}
 	
@@ -176,17 +185,10 @@ function skCmdDefCreatePoint() {
 	skCmdDef.call(this, "Point", "point", "icon toolbar-point");
 	
 	this.createCommand = function() {
-		return null;
+		return new skCreatePointCommand();
 	}
 }
-
-function skCmdDefCreateRectangle() {
-	skCmdDef.call(this, "Rectangle", "rectangle", "icon toolbar-rectangle");
-	
-	this.createCommand = function() {
-		return null;
-	}
-}
+skCmdDefCreatePoint.prototype = new skCmdDef();
 
 function skCmdDefCreateLineSegment() {
 	skCmdDef.call(this, "Line", "line", "icon toolbar-line");
@@ -195,13 +197,43 @@ function skCmdDefCreateLineSegment() {
 		return new skCreateLineSegmentCommand();
 	}
 }
+skCmdDefCreateLineSegment.prototype = new skCmdDef();
+
+function skCmdDefCreateCircle() {
+	skCmdDef.call(this, "Circle", "Create circle", "icon toolbar-circle");
+	
+	this.createCommand = function() {
+		return new skCreateCircleCommand();
+	}
+}
+skCmdDefCreateCircle.prototype = new skCmdDef();
+
 function skCmdDefCreateOval() {
-	skCmdDef.call(this, "Circle", "circle", "icon toolbar-circle");
+	skCmdDef.call(this, "Ellipse", "create ellipse", "icon toolbar-ellipse");
 	
 	this.createCommand = function() {
 		return new skCreateOvalCommand();
 	}
 }
+skCmdDefCreateOval.prototype = new skCmdDef();
+
+function skCmdDefCreateRectangle() {
+	skCmdDef.call(this, "Rectangle", "rectangle", "icon toolbar-rectangle");
+	
+	this.createCommand = function() {
+		return new skCreateRectangleCommand();
+	}
+}
+skCmdDefCreateRectangle.prototype = new skCmdDef();
+
+function skCmdDefCreateDimension() {
+	skCmdDef.call(this, "Dimension", "Create dimension", "icon toolbar-dimension");
+	
+	this.createCommand = function() {
+		return new skCreateDimensionCommand();
+	}
+}
+skCmdDefCreateDimension.prototype = new skCmdDef();
 
 //-------------------------------------------------
 //
@@ -310,6 +342,34 @@ skCreateGeomCommand.prototype = new skCommand();
 
 //-------------------------------------------------
 //
+//	skCreatePointCommand
+//
+//-------------------------------------------------
+
+function skCreatePointCommand() {
+    skCreateGeomCommand.call(this);
+
+    this.createPath = function (pt) {
+        return new Path.Point(pt);
+    }
+
+    this.createSkElement = function (mpt) {
+        var element = new skPoint(new skMPoint(mpt));
+        rnApp.addElement(element);
+        return element;
+    }
+
+    this.populateDispElement = function (skelement) {
+        var dispElement = new skDispPoint(skelement);
+        rnGraphicsManager.addDispElement(dispElement);
+        return dispElement;
+    }
+}
+
+skCreatePointCommand.prototype = new skCreateGeomCommand();
+
+//-------------------------------------------------
+//
 //	skCreateLineSegmentCommand
 //
 //-------------------------------------------------
@@ -336,6 +396,35 @@ function skCreateLineSegmentCommand() {
 }
 
 skCreateLineSegmentCommand.prototype = new skCreateGeomCommand();
+
+//-------------------------------------------------
+//
+//	skCreateCircleCommand
+//
+//-------------------------------------------------
+
+function skCreateCircleCommand() {
+    skCreateGeomCommand.call(this);
+
+    this.createPath = function (pt1, pt2) {
+        //var enclosingRect = new Circle(pt1, pt2);
+        //var path = new Path.Circle(enclosingRect, false);
+        //return path;
+    }
+
+    this.createSkElement = function (mpt1, mpt2) {
+        //var element = new skCircle(new skMOval(new skMCircle(mpt1, mpt2), true));
+        //rnApp.addElement(element);
+        //return element;
+    }
+
+    this.populateDispElement = function (skelement) {
+        // var dispElement = new skDispCircle(skelement);
+        // rnGraphicsManager.addDispElement(dispElement);
+        // return dispElement;
+    }
+}
+skCreateCircleCommand.prototype = new skCreateGeomCommand();
 
 //-------------------------------------------------
 //

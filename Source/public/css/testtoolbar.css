@@ -68,7 +68,14 @@
 	.toolbar-rectangle {
 		background-image: url(../img/toolbar/rectangle.png);
 	}
-
+	
+	.toolbar-dimension {
+		background-image: url(../img/toolbar/dimension.png);
+	}
+	.toolbar-ellipse {
+		background-image: url(../img/toolbar/ellipse.png);
+	}
+	
     /* Italic. */
     .goog-edit-italic {
       /* background-position: -16px; */
