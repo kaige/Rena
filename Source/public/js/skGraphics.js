@@ -787,7 +787,67 @@ function skLinkedList() {
 }
 
 
+//-------------------------------------------------
+//
+//	highlight geometry -- currently only used in skCreateDimensionCommand
+//
+//-------------------------------------------------
 
+function skHighlightGeometry(mgeom, skelement, hitPathItem) {
+    this._mathGeom = mgeom;
+    this._skElement = skelement;
+    this._originalHitPathItem = hitPathItem;
+    this._pathItem = null;    
+
+    this.mathGeom = function () {
+        return this._mathGeom;
+    }
+
+    this.skElement = function () {
+        return this._skElement;
+    }
+
+    this.originalHitPathItem = function () {
+        return this._originalHitPathItem;
+    }
+
+    this.pathItem = function () {
+        return this._pathItem;
+    }
+
+    this.setAsHighlightedColor = function () {
+        if (this._pathItem) {
+            this._pathItem.style = {
+                fillColor: 'red',
+                strokeColor: 'red',
+                strokeWidth: 3
+            };
+        }
+    }
+
+    this.setAsSelectedColor = function () {
+        if (this._pathItem) {
+            this._pathItem.style = {
+                fillColor: 'blue',
+                strokeColor: 'blue',
+                strokeWidth: 3
+            }
+        }
+    }
+
+    // create the path item
+    //
+    var pItem;
+    if (mgeom instanceof skMPoint) {
+        pItem = new Path.Circle(skConv.toPaperPoint(mgeom), 3);
+    }
+    else if (mgeom instanceof skMLineSegment) {
+        pItem = new Path.Line(skConv.toPaperPoint(mgeom.startPt()),
+                                 skConv.toPaperPoint(mgeom.endPt()));
+    }
+
+    this._pathItem = pItem;
+}
 
 //-------------------------------------------------
 //

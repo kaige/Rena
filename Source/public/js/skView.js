@@ -517,7 +517,6 @@ skRotateGeomCommand.prototype = new skEditGeomCommand();
 
 function skCreateDimensionCommand() {
     this._selectedGeoms = [];
-    this._dispSelGeoms = [];
     this._highlightedGeom = null;
     this._newDispDim = null;
 
@@ -528,57 +527,23 @@ function skCreateDimensionCommand() {
         this._selectedGeoms.push(geom);
     }
 
-    this.addDispSelGeom = function (dispGeom) {
-        this._dispSelGeoms.push(dispGeom);
-    }
-
-    this.populateDispGeoms = function (mgeom) {
-        var pathItem;
-        if (mgeom instanceof skMPoint) {
-            pathItem = new Path.Circle(skConv.toPaperPoint(mgeom), 3);
-        }
-        else if (mgeom instanceof skMLineSegment) {
-            pathItem = new Path.Line(skConv.toPaperPoint(mgeom.startPt()),
-                                     skConv.toPaperPoint(mgeom.endPt()));
-        }
-
-        return pathItem;
-    }
-
     this.cleanDispGeoms = function () {
         var i;
-        for (i = 0; i < this._dispSelGeoms.length; i++)
-            this._dispSelGeoms[i].remove();
+        for (i = 0; i < this._selectedGeoms.length; i++)
+            this._selectedGeoms[i].pathItem().remove();
     }
 
     this.clear = function () {
         this._selectedGeoms.splice(0, this._selectedGeoms.length);
-        this._dispSelGeoms.splice(0, this._dispSelGeoms.length);
         this._highlightedGeom = null;
         this._newDispDim = null;
-    }
-
-    this.setHighlightColor = function (pathItem) {
-        pathItem.style = {
-            fillColor: 'red',
-            strokeColor: 'red',
-            strokeWidth: 3
-        };
-    }
-
-    this.setSelectedColor = function (pathItem) {
-        pathItem.style = {
-            fillColor: 'blue',
-            strokeColor: 'blue',
-            strokeWidth: 3
-        }
     }
 
     this.isOKToBeSelected = function (geom) {
         if (this._selectedGeoms.length == 0)
             return true;
         else if (this._selectedGeoms.length == 1) {
-            var firstGeom = this._selectedGeoms[0];
+            var firstGeom = this._selectedGeoms[0].mathGeom();
             // filters of the allowed types of geometries to be selected
             //
             if (firstGeom instanceof skMPoint && geom instanceof skMLineSegment ||  //distance-point-line
@@ -634,12 +599,9 @@ function skCreateDimensionCommand() {
                 var dispElement = hitResult.item.dispElement;
                 var geom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
                 if (geom && this.isOKToBeSelected(geom)) {
-                    this._highlightedGeom = geom;
-                    this._highlightedGeom.skElement = dispElement.skElement();
-                    this._highlightedGeom.pathItem = hitResult.item;
-                    var pathItem = this.populateDispGeoms(geom);
-                    this.setHighlightColor(pathItem);
-                    pathItem.removeOnMove();
+                    this._highlightedGeom = new skHighlightGeometry(geom, dispElement.skElement(), hitResult.item);
+                    this._highlightedGeom.setAsHighlightedColor();
+                    this._highlightedGeom.pathItem().removeOnMove();
                 }
             }
         }
@@ -659,17 +621,18 @@ function skCreateDimensionCommand() {
 
     this.onMouseDown = function (event) {
         if (this._highlightedGeom) {
-            this.addSelectedGeom(this._highlightedGeom);
-            var pathItem = this.populateDispGeoms(this._highlightedGeom);
-            this.setSelectedColor(pathItem);
-            this.addDispSelGeom(pathItem);
+            var selectedGeom = new skHighlightGeometry(this._highlightedGeom.mathGeom(),
+                                                        this._highlightedGeom.skElement(),
+                                                        this._highlightedGeom.originalHitPathItem())
+            selectedGeom.setAsSelectedColor();
+            this.addSelectedGeom(selectedGeom);
 
             if (this._selectedGeoms.length == 2) {
                 // create the dimension object
-                this.makeDimension(this._selectedGeoms[0].skElement,
-                                   this._selectedGeoms[0],
+                this.makeDimension(this._selectedGeoms[0].skElement(),
+                                   this._selectedGeoms[0].mathGeom(),
                                    this._selectedGeoms[1].skElement,
-                                   this._selectedGeoms[1]);
+                                   this._selectedGeoms[1].mathGeom());
 
                 this._newDispDim.draw(event.downPoint);
 
@@ -702,8 +665,8 @@ function skCreateDimensionCommand() {
                         mostAboveItem = allDimItems[i];
                 }
 
-                var selItem1 = this._selectedGeoms[0].pathItem;
-                var selItem2 = this._selectedGeoms[1].pathItem;
+                var selItem1 = this._selectedGeoms[0].originalHitPathItem();
+                var selItem2 = this._selectedGeoms[1].originalHitPathItem();
                 selItem1.moveAbove(mostAboveItem);
                 selItem2.moveAbove(mostAboveItem);
 
@@ -721,3 +684,4 @@ function skCreateDimensionCommand() {
 }
 
 skCreateDimensionCommand.prototype = new skCommand();
+
