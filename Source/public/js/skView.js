@@ -191,7 +191,7 @@ function skCmdDefCreatePoint() {
 skCmdDefCreatePoint.prototype = new skCmdDef();
 
 function skCmdDefCreateLineSegment() {
-	skCmdDef.call(this, "Line", "line", "icon toolbar-line");
+	skCmdDef.call(this, "Line", "Line", "icon toolbar-line");
 	
 	this.createCommand = function() {
 		return new skCreateLineSegmentCommand();
@@ -200,7 +200,7 @@ function skCmdDefCreateLineSegment() {
 skCmdDefCreateLineSegment.prototype = new skCmdDef();
 
 function skCmdDefCreateCircle() {
-	skCmdDef.call(this, "Circle", "Create circle", "icon toolbar-circle");
+	skCmdDef.call(this, "Circle", "Circle", "icon toolbar-circle");
 	
 	this.createCommand = function() {
 		return new skCreateCircleCommand();
@@ -209,7 +209,7 @@ function skCmdDefCreateCircle() {
 skCmdDefCreateCircle.prototype = new skCmdDef();
 
 function skCmdDefCreateOval() {
-	skCmdDef.call(this, "Ellipse", "create ellipse", "icon toolbar-ellipse");
+	skCmdDef.call(this, "Oval", "Oval", "icon toolbar-ellipse");
 	
 	this.createCommand = function() {
 		return new skCreateOvalCommand();
@@ -218,7 +218,7 @@ function skCmdDefCreateOval() {
 skCmdDefCreateOval.prototype = new skCmdDef();
 
 function skCmdDefCreateRectangle() {
-	skCmdDef.call(this, "Rectangle", "rectangle", "icon toolbar-rectangle");
+	skCmdDef.call(this, "Rectangle", "Rectangle", "icon toolbar-rectangle");
 	
 	this.createCommand = function() {
 		return new skCreateRectangleCommand();
