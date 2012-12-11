@@ -4,8 +4,8 @@
 
     /* Base class for all icon elements. */
     .icon {
-      height: 20px;
-      width: 20px;
+      height: 28px;
+      width: 28px;
       /* background-image: url(../3p/closure-library/closure/goog/images/toolbar_icons.gif); */
       background-repeat: no-repeat;
       /* vertical-align: middle; */
