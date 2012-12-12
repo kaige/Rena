@@ -23,8 +23,6 @@ function onLoad() {
 
 function skView() {
 	this._createGeomBtnGrp = new skRadioButtonGroup();
-	// this._createGeomBtnGrp.addRadioButton(new skImgButton("line_btn", "img\\line.png", "img\\line_highlight.png", "img\\line_select.png"));
-	// this._createGeomBtnGrp.addRadioButton(new skImgButton("oval_btn", "img\\oval.png", "img\\oval_highlight.png", "img\\oval_select.png"));
 	
 	// Create toolbar buttons
 	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
@@ -72,69 +70,6 @@ function skRadioButtonGroup() {
 			}			
 		}			
 	}
-}
-
-
-//-------------------------------------------------
-//
-//	skImgButton: a button with image
-//
-//-------------------------------------------------
-
-function skImgButton (id, normalImg, highlightImg, selectImg) {
-	this._id = id;
-	this._obj = document.getElementById(id);
-	this._normalImg = normalImg;
-	this._highlightImg = highlightImg;
-	this._selectImg = selectImg;
-	this._isSelected = false;
-	
-	var that = this;
-	
-	this.obj = function () {
-		return this._obj;
-	}
-	
-	this.setSelected = function(p) {
-		this._isSelected = p;
-	}
-	
-	this.init = function () {
-		if (!that._isSelected)
-			that._obj.src = that._normalImg;
-		else
-			that._obj.src = that._selectImg;			
-	}
-	
-	this.onMouseOver = function() {
-		if (!that._isSelected)
-			that._obj.src = that._highlightImg;
-	}
-	
-	this.onMouseOut = function() {
-		if (!that._isSelected)
-			that._obj.src = that._normalImg;
-	}
-	
-	this.onMouseClick = function() {
-		if (!that._isSelected) {
-			that._obj.src = that._selectImg;
-			that._isSelected = true;
-			that._parentGroup.onSetSelected(that);
-		}
-		
-		var command;
-		if (id == "line_btn")
-		    command = new skCreateLineSegmentCommand();
-		else if (id == "oval_btn")
-		    command = new skCreateOvalCommand();
-        
-		rnController.setActiveCommand(command);
-	}
-	
-	this._obj.onmouseover = this.onMouseOver;
-	this._obj.onmouseout = this.onMouseOut;
-	this._obj.onclick = this.onMouseClick;
 }
 
 //-------------------------------------------------
@@ -354,7 +289,7 @@ function skCreatePointCommand() {
     }
 
     this.createSkElement = function (mpt) {
-        var element = new skPoint(new skMPoint(mpt.x, mpt.y));
+        var element = new skPoint(mpt);
         rnApp.addElement(element);
         return element;
     }

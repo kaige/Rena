@@ -191,6 +191,12 @@ function skDispPoint(pt) {
         this._boundingBox = null; //new skLineBounds(this);
 
         this.setDrawingStyle(this._pathItem, this.skElement());
+		this._pathItem.style = {
+			fillColor: '#C5E6EA',
+			strokeColor: '#385D8A',
+			strokeWidth: 1,
+			opacity: 0.5
+		};
     }
 
     this.clonePathItem = function (pt) {
@@ -200,18 +206,10 @@ function skDispPoint(pt) {
     }
     
     this.getConstrainableGeometry = function (pathItem, point) {
-        if (pathItem.owningBBoxElement) {
-            var bboxElement = pathItem.owningBBoxElement;
-            if (bboxElement instanceof skBBoxLineEndPt) {
-                return skConv.toMathPoint(pathItem.position);
-            }
-        }
-        else if (pathItem.dispElement) {
-            var pt1 = pathItem.firstSegment.point;
-            var pt2 = pathItem.lastSegment.point;
-            return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
-        }
-        
+		if (pathItem.dispElement) {			
+			var pt = pathItem.position;
+            return skConv.toMathPoint(pt);
+        }        
         return null;
     }
 
