@@ -736,7 +736,7 @@ function skCreateDimensionCommand() {
                 // create the dimension object
                 this.makeDimension(this._selectedGeoms[0].skElement(),
                                    this._selectedGeoms[0].mathGeom(),
-                                   this._selectedGeoms[1].skElement,
+                                   this._selectedGeoms[1].skElement(),
                                    this._selectedGeoms[1].mathGeom());
 
                 this._newDispDim.draw(event.downPoint);
