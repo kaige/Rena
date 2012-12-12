@@ -27,7 +27,7 @@ function skView() {
 	// this._createGeomBtnGrp.addRadioButton(new skImgButton("oval_btn", "img\\oval.png", "img\\oval_highlight.png", "img\\oval_select.png"));
 	
 	// Create toolbar buttons
-	//this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
+	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
 	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateLineSegment());
 	//this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateCircle());
 	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateOval());
@@ -350,11 +350,11 @@ function skCreatePointCommand() {
     skCreateGeomCommand.call(this);
 
     this.createPath = function (pt) {
-        return new Path.Point(pt);
+        return new Path.Circle(pt, 4);
     }
 
     this.createSkElement = function (mpt) {
-        var element = new skPoint(new skMPoint(mpt));
+        var element = new skPoint(new skMPoint(mpt.x, mpt.y));
         rnApp.addElement(element);
         return element;
     }

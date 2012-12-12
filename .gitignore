@@ -42,7 +42,8 @@ local.properties
 *.sln.docstates
 
 # Build results
-[Dd]ebug/
+# disable "debug" folder filter
+[Dd]ebug2/
 [Rr]elease/
 *_i.c
 *_p.c

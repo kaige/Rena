@@ -115,7 +115,8 @@ function skDispElement(element) {
 
     this.setIsSelected = function (b) {
         this._isSelected = b;
-        this.boundingBox().setVisible(b);
+		if (this.boundingBox() != null)
+			this.boundingBox().setVisible(b);
     }
 
     this.isSelected = function () {
@@ -170,6 +171,54 @@ function skInvisibleCenterPoint(pt, owningDispElement) {
     this._pathItem.invisibleCenter = true;
     this._pathItem.dispElement = owningDispElement;
 }
+
+
+//-------------------------------------------------
+//
+//	skDispPoint
+//
+//-------------------------------------------------
+
+function skDispPoint(pt) {
+    skDispElement.call(this, pt);
+    
+    this.init = function () {
+        var pt = this.skElement();
+        var pt1 = skConv.toPaperPoint(pt.geom());
+
+        this._pathItem = new Path.Circle(pt1, 4);
+        this._pathItem.dispElement = this;
+        this._boundingBox = null; //new skLineBounds(this);
+
+        this.setDrawingStyle(this._pathItem, this.skElement());
+    }
+
+    this.clonePathItem = function (pt) {
+        var tempPathItem = new Path.Circle(pt, 4);
+        this.setDrawingStyle(tempPathItem, this.skElement());
+        return tempPathItem;
+    }
+    
+    this.getConstrainableGeometry = function (pathItem, point) {
+        if (pathItem.owningBBoxElement) {
+            var bboxElement = pathItem.owningBBoxElement;
+            if (bboxElement instanceof skBBoxLineEndPt) {
+                return skConv.toMathPoint(pathItem.position);
+            }
+        }
+        else if (pathItem.dispElement) {
+            var pt1 = pathItem.firstSegment.point;
+            var pt2 = pathItem.lastSegment.point;
+            return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
+        }
+        
+        return null;
+    }
+
+    this.init();
+}
+
+skDispPoint.prototype = new skDispElement();
 
 //-------------------------------------------------
 //
