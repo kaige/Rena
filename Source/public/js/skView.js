@@ -22,29 +22,29 @@ function onLoad() {
 //-------------------------------------------------
 
 function skView() {
-	this._createGeomBtnGrp = new skRadioButtonGroup();
-	
-	// Create toolbar buttons
-	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
-	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateLineSegment());
-	//this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateCircle());
-	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateOval());
-	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateRectangle());
-	this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateDimension());
-	
-	// Initial toolbar
-	this._toolbar = new goog.ui.Toolbar();	
-	var toolbartemp = this._toolbar;
-	goog.array.forEach(this._createGeomBtnGrp._radioButtons, function (btn, index, array) {
-		btn.createButton(toolbartemp);
+    this._createGeomBtnGrp = new skRadioButtonGroup();
+
+    // Create toolbar buttons
+    this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
+    this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateLineSegment());
+    //this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateCircle());
+    this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateOval());
+    this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateRectangle());
+    this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateDimension());
+
+    // Initial toolbar
+    this._toolbar = new goog.ui.Toolbar();
+    var toolbartemp = this._toolbar;
+    goog.array.forEach(this._createGeomBtnGrp._radioButtons, function (btn, index, array) {
+        btn.createButton(toolbartemp);
     });
-	this._toolbar.render(goog.dom.getElement('tool_bar_group1_div'));
-	
-	this.deSelectAllButtons = function () {
-	    // this is a temporary implementation
-	    //
-	    this._createGeomBtnGrp.onSetSelected(null);
-	}
+    this._toolbar.render(goog.dom.getElement('tool_bar_group1_div'));
+
+    this.deSelectAllButtons = function () {
+        // this is a temporary implementation
+        //
+        this._createGeomBtnGrp.onSetSelected(null);
+    }
 }
 
 //-------------------------------------------------
@@ -54,22 +54,22 @@ function skView() {
 //-------------------------------------------------
 
 function skRadioButtonGroup() {
-	this._radioButtons = [];
-	
-	this.addRadioButton = function(btn) {
-		btn._parentGroup = this;
-		this._radioButtons.push(btn);
-	}
-	
-	this.onSetSelected = function(selectedBtn) {
-		var i;
-		for (i = 0; i < this._radioButtons.length; i++) {
-			var btn = this._radioButtons[i];
-			if (btn !== selectedBtn) {
-				btn.setSelected(false);
-			}			
-		}			
-	}
+    this._radioButtons = [];
+
+    this.addRadioButton = function (btn) {
+        btn._parentGroup = this;
+        this._radioButtons.push(btn);
+    }
+
+    this.onSetSelected = function (selectedBtn) {
+        var i;
+        for (i = 0; i < this._radioButtons.length; i++) {
+            var btn = this._radioButtons[i];
+            if (btn !== selectedBtn) {
+                btn.setSelected(false);
+            }
+        }
+    }
 }
 
 //-------------------------------------------------
@@ -79,94 +79,94 @@ function skRadioButtonGroup() {
 //
 //-------------------------------------------------
 function skCmdDef(id, tooltip, classname) {
-	this._id = id;
-	this._obj = document.getElementById(id);
-	this._tooltip = tooltip;
-	this._classname = classname;
-	this._btn = null;
-	
-	var that = this;
-	
-	this.obj = function () {
-		return that._obj;
-	}
-	
-	this.setSelected = function(p) {
-		that._btn.setChecked(p);
-	}
-	
-	this.createButton = function(toolbar) {
-		that._btn = new goog.ui.ToolbarToggleButton(goog.dom.createDom('div', that._classname));		
-		that._btn.setTooltip(that._tooltip);
+    this._id = id;
+    this._obj = document.getElementById(id);
+    this._tooltip = tooltip;
+    this._classname = classname;
+    this._btn = null;
+
+    var that = this;
+
+    this.obj = function () {
+        return that._obj;
+    }
+
+    this.setSelected = function (p) {
+        that._btn.setChecked(p);
+    }
+
+    this.createButton = function (toolbar) {
+        that._btn = new goog.ui.ToolbarToggleButton(goog.dom.createDom('div', that._classname));
+        that._btn.setTooltip(that._tooltip);
         toolbar.addChild(that._btn, true);
-		
-		goog.events.listen(that._btn, goog.ui.Component.EventType.ACTION, that.onMouseClickEX);
-	}
-	this.createCommand = function() {
-		prompt("Sorry, haven't implemented yet");
-		return null;
-	}
-	
-	this.onMouseClickEX = function() {
-		if (rnController.activeCommand() != that) {
-			that._parentGroup.onSetSelected(that);
-		}
-		var cmd = that.createCommand();
-		rnController.setActiveCommand(cmd);
-	}
+
+        goog.events.listen(that._btn, goog.ui.Component.EventType.ACTION, that.onMouseClickEX);
+    }
+    this.createCommand = function () {
+        prompt("Sorry, haven't implemented yet");
+        return null;
+    }
+
+    this.onMouseClickEX = function () {
+        if (rnController.activeCommand() != that) {
+            that._parentGroup.onSetSelected(that);
+        }
+        var cmd = that.createCommand();
+        rnController.setActiveCommand(cmd);
+    }
 }
 
 function skCmdDefCreatePoint() {
-	skCmdDef.call(this, "Point", "point", "icon toolbar-point");
-	
-	this.createCommand = function() {
-		return new skCreatePointCommand();
-	}
+    skCmdDef.call(this, "Point", "point", "icon toolbar-point");
+
+    this.createCommand = function () {
+        return new skCreatePointCommand();
+    }
 }
 skCmdDefCreatePoint.prototype = new skCmdDef();
 
 function skCmdDefCreateLineSegment() {
-	skCmdDef.call(this, "Line", "Line", "icon toolbar-line");
-	
-	this.createCommand = function() {
-		return new skCreateLineSegmentCommand();
-	}
+    skCmdDef.call(this, "Line", "Line", "icon toolbar-line");
+
+    this.createCommand = function () {
+        return new skCreateLineSegmentCommand();
+    }
 }
 skCmdDefCreateLineSegment.prototype = new skCmdDef();
 
 function skCmdDefCreateCircle() {
-	skCmdDef.call(this, "Circle", "Circle", "icon toolbar-circle");
-	
-	this.createCommand = function() {
-		return new skCreateCircleCommand();
-	}
+    skCmdDef.call(this, "Circle", "Circle", "icon toolbar-circle");
+
+    this.createCommand = function () {
+        return new skCreateCircleCommand();
+    }
 }
 skCmdDefCreateCircle.prototype = new skCmdDef();
 
 function skCmdDefCreateOval() {
-	skCmdDef.call(this, "Oval", "Oval", "icon toolbar-ellipse");
-	
-	this.createCommand = function() {
-		return new skCreateOvalCommand();
-	}
+    skCmdDef.call(this, "Oval", "Oval", "icon toolbar-ellipse");
+
+    this.createCommand = function () {
+        return new skCreateOvalCommand();
+    }
 }
 skCmdDefCreateOval.prototype = new skCmdDef();
 
 function skCmdDefCreateRectangle() {
-	skCmdDef.call(this, "Rectangle", "Rectangle", "icon toolbar-rectangle");
-	
-	this.createCommand = function() {
-		return new skCreateRectangleCommand();
-	}
+    skCmdDef.call(this, "Rectangle", "Rectangle", "icon toolbar-rectangle");
+
+    this.createCommand = function () {
+        return new skCreateRectangleCommand();
+    }
 }
 skCmdDefCreateRectangle.prototype = new skCmdDef();
 
 function skCmdDefCreateDimension() {
-	skCmdDef.call(this, "Dimension", "Create dimension", "icon toolbar-dimension");
-	
-	this.createCommand = function() {
-		return new skCreateDimensionCommand();
-	}
+    skCmdDef.call(this, "Dimension", "Create dimension", "icon toolbar-dimension");
+
+    this.createCommand = function () {
+        return new skCreateDimensionCommand();
+    }
 }
 skCmdDefCreateDimension.prototype = new skCmdDef();
 
@@ -221,7 +221,7 @@ function skCommand() {
     this.onMouseDrag = function (event) { }
     this.onMouseUp = function (event) { }
     this.onMouseMove = function (event) { }
-    this.terminate = function () {}
+    this.terminate = function () { }
 }
 
 //-------------------------------------------------
@@ -265,7 +265,7 @@ function skCreateGeomCommand() {
         var mpt2 = skConv.toMathPoint(pt2);
         var skelement = this.createSkElement(mpt1, mpt2);
         var dispElement = this.populateDispElement(skelement);
-        
+
         rnController.setActiveCommand(new skSelectGeomCommand());
         dispElement.setIsSelected(true);
 
@@ -436,13 +436,6 @@ function skSelectGeomCommand() {
     }
     view.draw();
 
-    var hitOptions = {
-        segments: true,
-        stroke: true,
-        fill: true,
-        tolerance: 5
-    };
-
     this._hitPathItem = null;
 
     this.onMouseDown = function (event) {
@@ -464,6 +457,9 @@ function skSelectGeomCommand() {
                 rnController.setActiveCommand(new skMoveGeomCommand(hitPathItem));
             }
         }
+        else if (hitPathItem && hitPathItem.dispDimText) {
+            rnController.setActiveCommand(new skEditDispDimensionCommand(hitPathItem.dispDimension, this));
+        }
         else {
             rnController.deselectAll();
         }
@@ -471,12 +467,20 @@ function skSelectGeomCommand() {
 
         view.draw();
     }
-   
+
     this.onMouseMove = function (event) {
+        // firstly we try to hit the path items
+        //
+        var hitOptions = {
+            segments: true,
+            stroke: true,
+            fill: true,
+            tolerance: 5
+        };
         var hitResult = project.hitTest(event.point, hitOptions);
+
         if (hitResult && hitResult.item) {
             this._hitPathItem = hitResult.item;
-
             var hitPathItem = this._hitPathItem;
             if (hitPathItem.owningBBoxElement) {
                 if (hitPathItem.dispElement.isSelected()) {
@@ -486,11 +490,19 @@ function skSelectGeomCommand() {
             else if (hitPathItem.dispElement) {
                 rnGraphicsManager.drawingCanvas().style.cursor = "move";
             }
+            return;
         }
-        else {
-            this._hitPathItem = null;
-            rnGraphicsManager.drawingCanvas().style.cursor = "default";
-        }
+
+        // then we try to hit the text item:  this still doesn't work, paper.js seems can't hit test text
+        //
+        //var hitOptions2 = { type: TextItem, tolerance: 5 };
+        //var hitResult = project.hitTest(event.point, hitOptions2);
+        //if (hitResult && hitResult.item) { this._hitPathItem = hitResult.item;  return; }
+
+        // default case:
+        //
+        this._hitPathItem = null;
+        rnGraphicsManager.drawingCanvas().style.cursor = "default";
     }
 }
 
@@ -592,10 +604,10 @@ function skRotateGeomCommand(handlePtPathItem) {
         var deltaAngle = this.determineRotateAngle(event.downPoint, event.point, BBox.center());
         skElement.setAngle(oldAngle + deltaAngle);
     }
-	
-	this.onMouseMove = function (event) {
-		// do nothing to prevent cursor style inadvertently changed by others
-	}
+
+    this.onMouseMove = function (event) {
+        // do nothing to prevent cursor style inadvertently changed by others
+    }
 
     this.determineRotateAngle = function (ptOld, ptNew, center) {
         var vec1 = ptOld.subtract(center).normalize();
@@ -621,34 +633,34 @@ skRotateGeomCommand.prototype = new skEditGeomCommand();
 //-------------------------------------------------
 
 function skCreateDimensionCommand() {
-    this._selectedGeoms = [];
-    this._highlightedGeom = null;
-    this._newDispDim = null;
+    skCommand.call(this);
+
+    this._selectedHighlightGeoms = [];
+    this._highlightGeom = null;
 
     var canvas = rnGraphicsManager.drawingCanvas();
-    canvas.style.cursor = "default"; 
+    canvas.style.cursor = "default";
 
-    this.addSelectedGeom = function (geom) {
-        this._selectedGeoms.push(geom);
+    this.addSelectedHighlightGeom = function (g) {
+        this._selectedHighlightGeoms.push(g);
     }
 
     this.cleanDispGeoms = function () {
         var i;
-        for (i = 0; i < this._selectedGeoms.length; i++)
-            this._selectedGeoms[i].pathItem().remove();
+        for (i = 0; i < this._selectedHighlightGeoms.length; i++)
+            this._selectedHighlightGeoms[i].pathItem().remove();
     }
 
     this.clear = function () {
-        this._selectedGeoms.splice(0, this._selectedGeoms.length);
-        this._highlightedGeom = null;
-        this._newDispDim = null;
+        this._selectedHighlightGeoms.splice(0, this._selectedHighlightGeoms.length);
+        this._highlightGeom = null;
     }
 
     this.isOKToBeSelected = function (geom) {
-        if (this._selectedGeoms.length == 0)
+        if (this._selectedHighlightGeoms.length == 0)
             return true;
-        else if (this._selectedGeoms.length == 1) {
-            var firstGeom = this._selectedGeoms[0].mathGeom();
+        else if (this._selectedHighlightGeoms.length == 1) {
+            var firstGeom = this._selectedHighlightGeoms[0].mathGeom();
             // filters of the allowed types of geometries to be selected
             //
             if (firstGeom instanceof skMPoint && geom instanceof skMLineSegment ||  //distance-point-line
@@ -657,7 +669,7 @@ function skCreateDimensionCommand() {
             else
                 return false;
         }
-        else if (this._selectedGeoms.length == 2)
+        else if (this._selectedHighlightGeoms.length == 2)
             return false;
 
         return false;
@@ -684,8 +696,7 @@ function skCreateDimensionCommand() {
 
         // distance-line-line
 
-        this._newDispDim = newDispDim;
-        return this._newDispDim;
+        return newDispDim;
     }
 
     var hitOptions = {
@@ -696,88 +707,50 @@ function skCreateDimensionCommand() {
     };
 
     this.onMouseMove = function (event) {
-        this._highlightedGeom = null;
+        this._highlightGeom = null;
 
-        if (!this._newDispDim) {
-            var hitResult = project.hitTest(event.point, hitOptions);
-            if (hitResult && hitResult.item && hitResult.item.dispElement) {
-                var dispElement = hitResult.item.dispElement;
-                var geom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
-                if (geom && this.isOKToBeSelected(geom)) {
-                    this._highlightedGeom = new skHighlightGeometry(geom, dispElement.skElement(), hitResult.item);
-                    this._highlightedGeom.setAsHighlightedColor();
-                    this._highlightedGeom.pathItem().removeOnMove();
-                }
+        var hitResult = project.hitTest(event.point, hitOptions);
+        if (hitResult && hitResult.item && hitResult.item.dispElement) {
+            var dispElement = hitResult.item.dispElement;
+            var geom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
+            if (geom && this.isOKToBeSelected(geom)) {
+                this._highlightGeom = new skHighlightGeometry(geom, dispElement.skElement(), hitResult.item);
+                this._highlightGeom.setAsHighlightedColor();
+                this._highlightGeom.pathItem().removeOnMove();
             }
-        }
-        else {
-            this._newDispDim.draw(event.point);
-
-            var pathItems = this._newDispDim.pathItems();
-            var i;
-            for (i = 0; i < pathItems.length; i++) {
-                pathItems[i].removeOnMove();
-                pathItems[i].removeOnUp();
-            }
-
-            this._newDispDim.clearPathItems();
         }
     }
 
     this.onMouseDown = function (event) {
-        if (this._highlightedGeom) {
-            var selectedGeom = new skHighlightGeometry(this._highlightedGeom.mathGeom(),
-                                                        this._highlightedGeom.skElement(),
-                                                        this._highlightedGeom.originalHitPathItem())
-            selectedGeom.setAsSelectedColor();
-            this.addSelectedGeom(selectedGeom);
+        if (this._highlightGeom) {
+            var selectedHighlightGeom = new skHighlightGeometry(this._highlightGeom.mathGeom(),
+                                                        this._highlightGeom.skElement(),
+                                                        this._highlightGeom.originalHitPathItem())
+            selectedHighlightGeom.setAsSelectedColor();
+            this.addSelectedHighlightGeom(selectedHighlightGeom);
 
-            if (this._selectedGeoms.length == 2) {
+            if (this._selectedHighlightGeoms.length == 2) {
                 // create the dimension object
-                this.makeDimension(this._selectedGeoms[0].skElement(),
-                                   this._selectedGeoms[0].mathGeom(),
-                                   this._selectedGeoms[1].skElement(),
-                                   this._selectedGeoms[1].mathGeom());
+                var newDispDim = this.makeDimension(this._selectedHighlightGeoms[0].skElement(),
+                                                    this._selectedHighlightGeoms[0].mathGeom(),
+                                                    this._selectedHighlightGeoms[1].skElement(),
+                                                    this._selectedHighlightGeoms[1].mathGeom());
 
-                this._newDispDim.draw(event.downPoint);
+                newDispDim.addOrgSelPathItem(this._selectedHighlightGeoms[0].originalHitPathItem());
+                newDispDim.addOrgSelPathItem(this._selectedHighlightGeoms[1].originalHitPathItem());
+                newDispDim.addHighlightPathItem(this._selectedHighlightGeoms[0].pathItem());
+                newDispDim.addHighlightPathItem(this._selectedHighlightGeoms[1].pathItem());
 
-                var pathItems = this._newDispDim.pathItems();
-                var i;
-                for (i = 0; i < pathItems.length; i++) {
-                    pathItems[i].removeOnMove();
-                    pathItems[i].removeOnUp();
-                }
+                this.clear();
 
-                this._newDispDim.clearPathItems();
+                rnController.setActiveCommand(new skEditDispDimensionCommand(newDispDim, this));
             }
         }
-        else {
-            if (this._selectedGeoms.length == 2) {
-                // put the dimension object down and clear temp highlight path items.
-                //
-                this.cleanDispGeoms();
-                this._newDispDim.draw(event.downPoint);
-
-                // move the selected path item (in most time they're invisible) above the dimension path items
-                // so the next time's hit test can still hit the selected geometry easily
-                // this is a workaround to the limitation of paper.js library
-                //
-                var allDimItems = this._newDispDim.pathItems();
-                var i;
-                var mostAboveItem = allDimItems[0];
-                for (i = 1; i < allDimItems.length; i++) {
-                    if (allDimItems[i].isAbove(mostAboveItem))
-                        mostAboveItem = allDimItems[i];
-                }
-
-                var selItem1 = this._selectedGeoms[0].originalHitPathItem();
-                var selItem2 = this._selectedGeoms[1].originalHitPathItem();
-                selItem1.moveAbove(mostAboveItem);
-                selItem2.moveAbove(mostAboveItem);
-
-                // clear so we can create another dimension
-                //
-                this.clear();
+        else {      // edit the value of the dimension
+            var hitResult = project.hitTest(event.point, hitOptions);
+            if (hitResult && hitResult.item && hitResult.item.dispDimText) {
+                var dispDim = hitResult.item.dispDimension;
+                
             }
         }
     }
@@ -790,3 +763,37 @@ function skCreateDimensionCommand() {
 
 skCreateDimensionCommand.prototype = new skCommand();
 
+//-------------------------------------------------
+//
+//	skEditDispDimensionCommand
+//
+//-------------------------------------------------
+
+function skEditDispDimensionCommand(dispDim, prevCommand) {
+    skCommand.call(this);
+
+    this._dispDim = dispDim;
+    this._prevCommand = prevCommand;
+
+    this.onMouseMove = function (event) {
+        this._dispDim.removePathItems();
+        this._dispDim.draw(event.point);
+
+        var pathItems = this._dispDim.pathItems();
+        var i;
+        for (i = 0; i < pathItems.length; i++) {
+            pathItems[i].removeOnMove();
+            pathItems[i].removeOnUp();
+        }
+        this._dispDim.clearPathItems();
+    }
+
+    this.onMouseDown = function (event) {
+        this._dispDim.draw(event.point);
+        this._dispDim.removeHighlightPathItems();
+        rnController.setActiveCommand(this._prevCommand);
+    }
+
+}
+
+skEditDispDimensionCommand.prototype = new skCommand();

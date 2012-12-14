@@ -914,6 +914,16 @@ function skDispConstraint(skCon) {
         this._pathItems.push(item);
     }
 
+    this.removePathItems = function () {
+        if (this._pathItems.length > 0) {
+            var i;
+            for (i = 0; i < this._pathItems.length; i++)
+                this._pathItems[i].remove();
+
+            this.clearPathItems();
+        }
+    }
+
     this.clearPathItems = function () {
         this._pathItems.splice(0, this._pathItems.length);
     }
@@ -938,6 +948,26 @@ function skDispConstraint(skCon) {
 function skDispDimension(skDim) {
     skDispConstraint.call(this, skDim);
     this._textPos = null;
+    this._orgSelectedPathItems = [];
+    this._highlightPathItems = [];
+
+    this.addOrgSelPathItem = function (pathItem) {
+        this._orgSelectedPathItems.push(pathItem);
+    }
+
+    this.addHighlightPathItem = function (pathItem) {
+        this._highlightPathItems.push(pathItem);
+    }
+
+    this.removeHighlightPathItems = function () {
+        if (this._highlightPathItems.length > 0) {
+            var i;
+            for (i = 0; i < this._highlightPathItems.length; i++)
+                this._highlightPathItems[i].remove();
+
+            this._highlightPathItems.splice(0, this._highlightPathItems.length);
+        }
+    }
 
     this.evaluateDefPoints = function (pos) { };
     this.drawDimensionLines = function () { };
@@ -953,6 +983,7 @@ function skDispDimension(skDim) {
         this.drawText();
 
         this.applyPathStyle();
+        this.adjustPathItemOrder();
     }
 
     // given a point and a vector, create the path item that represent the arrow head
@@ -976,6 +1007,26 @@ function skDispDimension(skDim) {
         path.add(pt3);
 
         this.addPathItem(path);
+    }
+
+    // move the selected path item (in most time they're invisible) above the dimension path items
+    // so the next time's hit test can still hit the selected geometry easily
+    // this is a workaround to the limitation of paper.js library
+    //
+    this.adjustPathItemOrder = function () {
+
+        var allDimItems = this.pathItems();
+        var i;
+        var mostAboveItem = allDimItems[0];
+        for (i = 1; i < allDimItems.length; i++) {
+            if (allDimItems[i].isAbove(mostAboveItem))
+                mostAboveItem = allDimItems[i];
+        }
+
+        var selItem1 = this._orgSelectedPathItems[0];
+        var selItem2 = this._orgSelectedPathItems[1];
+        selItem1.moveAbove(mostAboveItem);
+        selItem2.moveAbove(mostAboveItem);
     }
 }
 
@@ -1045,6 +1096,8 @@ function skDispLinearDimension(skDim) {
         text.justification = 'center';
         text.fillColor = 'green';
         text.content = this._skConstraint.offset().toFixed(3).toString();
+        text.dispDimText = true;      // add a property
+        text.dispDimension = this;
 
         // rotate the text to align with dimension line
         //
@@ -1065,6 +1118,15 @@ function skDispLinearDimension(skDim) {
         text.translate(newY.multiply(scale));
 
         this.addPathItem(text);
+
+        // for now paper.js can't hit test text, 
+        // so we draw an invisible circle under the text to work around this
+        //
+        var invisibleCircle = new Path.Circle(text.position, 10);
+        this.addPathItem(invisibleCircle);
+        invisibleCircle.dispDimText = true;      // add a property
+        invisibleCircle.dispDimension = this;
+        invisibleCircle.visible = false;
     }
 
     this.drawArrows = function () {
