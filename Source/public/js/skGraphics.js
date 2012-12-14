@@ -906,6 +906,10 @@ function skDispConstraint(skCon) {
     this._skConstraint = skCon;
     this._pathItems = [];
 
+    this.skConstraint = function () {
+        return this._skConstraint;
+    }
+
     this.pathItems = function () {
         return this._pathItems;
     }
@@ -951,6 +955,10 @@ function skDispDimension(skDim) {
     this._orgSelectedPathItems = [];
     this._highlightPathItems = [];
 
+    this.textPos = function () {
+        return this._textPos;
+    }
+
     this.addOrgSelPathItem = function (pathItem) {
         this._orgSelectedPathItems.push(pathItem);
     }
@@ -978,6 +986,7 @@ function skDispDimension(skDim) {
         this._textPos = pos;
         this.evaluateDefPoints(pos);
 
+        this.removePathItems();
         this.drawDimensionLines();
         this.drawArrows();
         this.drawText();
@@ -1095,7 +1104,7 @@ function skDispLinearDimension(skDim) {
         var text = new PointText(pos);
         text.justification = 'center';
         text.fillColor = 'green';
-        text.content = this._skConstraint.offset().toFixed(3).toString();
+        text.content = this._skConstraint.offset().toFixed(2).toString();
         text.dispDimText = true;      // add a property
         text.dispDimension = this;
 

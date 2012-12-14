@@ -750,7 +750,25 @@ function skCreateDimensionCommand() {
             var hitResult = project.hitTest(event.point, hitOptions);
             if (hitResult && hitResult.item && hitResult.item.dispDimText) {
                 var dispDim = hitResult.item.dispDimension;
-                
+                var pos = hitResult.item.position;
+
+                var editBoxHandler = function (response) {
+                    if (response !== null) {
+                        dispDim.skConstraint().setOffset(new Number(response));
+                        dispDim.draw(dispDim.textPos());
+                        view.draw();
+                    }
+                }
+
+                var editBox = new goog.ui.Prompt('edit dimension value ', 'd= ', editBoxHandler);
+                editBox.setDefaultValue(dispDim.skConstraint().offset().toFixed(2));
+                editBox.setVisible(true);
+
+                // set dialog's position, we add a "magic" offset number here,
+                // which are actually the canvas's position in the window.
+                // In the future we should use code to calculate this number
+                //
+                goog.style.setPosition(editBox.getDialogElement(), pos.x - 10, pos.y + 75);
             }
         }
     }
@@ -776,7 +794,6 @@ function skEditDispDimensionCommand(dispDim, prevCommand) {
     this._prevCommand = prevCommand;
 
     this.onMouseMove = function (event) {
-        this._dispDim.removePathItems();
         this._dispDim.draw(event.point);
 
         var pathItems = this._dispDim.pathItems();

@@ -31,7 +31,7 @@ function skConstraint(element1, geom1, element2, geom2, offset) {
         return this._offset;
     }
 
-    this.setOffset = function (offset) {
+    this.setOffset = function (v) {
         this._offset = v;
     }
 
