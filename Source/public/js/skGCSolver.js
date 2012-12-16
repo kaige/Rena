@@ -24,6 +24,8 @@ function skGCSolverGeom(mathGeometry, solver) {
     this.getIndex = function () {
         return this._solver.getIndex(this);
     }
+
+    this.pos = function () { }
 }
 
 //-------------------------------------------------
@@ -47,6 +49,10 @@ function skSPoint(mPt, solver) {
     this.getVariables = function (x) {
         x[x.index++] = this._geom.x();
         x[x.index++] = this._geom.y();
+    }
+
+    this.pos = function () {
+        return new skMPoint(this._geom.x(), this._geom.y());
     }
 }
 
@@ -73,6 +79,10 @@ function skSLine(mLn, solver) {
     this.getVariables = function (x) {
         x[x.index++] = this._geom.startPt().x();
         x[x.index++] = this._geom.startPt().y();
+    }
+
+    this.pos = function () {
+        return new skMPoint(this._geom.startPt().x(), this._geom.startPt().y());
     }
 }
 

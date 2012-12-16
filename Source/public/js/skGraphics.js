@@ -434,6 +434,7 @@ function skBoundingBox(displayElement) {
         for (i = 0; i < this._items.length; i++) {
             if (this._items[i].name === pItemName) {
                 pathItem = this._items[i];
+                break;
             }
         }
         return pathItem;

@@ -218,6 +218,10 @@ function skController() {
             all[i].draw(all[i].pos());
         }
     }
+
+    this.updateSkElementPos = function () {
+        rnApp.update();
+    }
 }
 
 //-------------------------------------------------
@@ -547,6 +551,7 @@ function skEditGeomCommand(pathItem) {
         dispElement.setIsSelected(true);
 
         rnController.updateConstraintsDefinition();
+        rnController.updateSkElementPos();
     }
 
     this.editBoundingBox = function (event) { }
@@ -708,8 +713,8 @@ function skCreateDimensionCommand() {
         }
         else if (mgeom2 instanceof skMPoint && mgeom1 instanceof skMLineSegment) {
             var offset = mgeom1.getLine().distance(mgeom2);
-            newDim = new skDistPtLn(element1, mgeom2, element1, mgeom1, offset);
-            newDispDim = new skDispDistPtLn(dispElement1, name1, dispElement2, name2, newDim);
+            newDim = new skDistPtLn(element2, mgeom2, element1, mgeom1, offset);
+            newDispDim = new skDispDistPtLn(dispElement2, name2, dispElement1, name1, newDim);
         }
         // distance-point-point
         //
@@ -769,6 +774,7 @@ function skCreateDimensionCommand() {
                     if (response !== null) {
                         dispDim.skConstraint().setOffset(new Number(response));
                         dispDim.draw(dispDim.textPos());
+                        rnController.updateSkElementPos();
                         view.draw();
                     }
                 }
