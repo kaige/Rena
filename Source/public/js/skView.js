@@ -181,9 +181,10 @@ function skController() {
 
     this.setActiveCommand = function (cmd) {
         if (this._activeCommand)
-            this._activeCommand.terminate();
+            this._activeCommand.onTerminate();
 
         this._activeCommand = cmd;
+        this._activeCommand.onActivate();
     }
 
     this.activeCommand = function () {
@@ -221,7 +222,8 @@ function skCommand() {
     this.onMouseDrag = function (event) { }
     this.onMouseUp = function (event) { }
     this.onMouseMove = function (event) { }
-    this.terminate = function () { }
+    this.onActivate = function () { }
+    this.onTerminate = function () { }
 }
 
 //-------------------------------------------------
@@ -648,10 +650,11 @@ function skCreateDimensionCommand() {
     this.cleanDispGeoms = function () {
         var i;
         for (i = 0; i < this._selectedHighlightGeoms.length; i++)
-            this._selectedHighlightGeoms[i].pathItem().remove();
+            this._selectedHighlightGeoms[i].highlightPathItem().remove();
     }
 
     this.clear = function () {
+        this.cleanDispGeoms();
         this._selectedHighlightGeoms.splice(0, this._selectedHighlightGeoms.length);
         this._highlightGeom = null;
     }
@@ -661,6 +664,7 @@ function skCreateDimensionCommand() {
             return true;
         else if (this._selectedHighlightGeoms.length == 1) {
             var firstGeom = this._selectedHighlightGeoms[0].mathGeom();
+
             // filters of the allowed types of geometries to be selected
             //
             if (firstGeom instanceof skMPoint && geom instanceof skMLineSegment ||  //distance-point-line
@@ -675,21 +679,26 @@ function skCreateDimensionCommand() {
         return false;
     }
 
-    this.makeDimension = function (element1, mgeom1, element2, mgeom2) {
+    this.makeDimension = function (dispElement1, name1, dispElement2, name2) {
         var newDim;
         var newDispDim;
+
+        var element1 = dispElement1.skElement();
+        var mgeom1 = dispElement1.getConstrainableGeometry(name1);
+        var element2 = dispElement2.skElement();
+        var mgeom2 = dispElement2.getConstrainableGeometry(name2);
 
         // distance-point-line
         //
         if (mgeom1 instanceof skMPoint && mgeom2 instanceof skMLineSegment) {
             var offset = mgeom2.getLine().distance(mgeom1);
             newDim = new skDistPtLn(element1, mgeom1, element2, mgeom2, offset);
-            newDispDim = new skDispDistPtLn(newDim);
+            newDispDim = new skDispDistPtLn(dispElement1, name1, dispElement2, name2, newDim);
         }
         else if (mgeom2 instanceof skMPoint && mgeom1 instanceof skMLineSegment) {
             var offset = mgeom1.getLine().distance(mgeom2);
             newDim = new skDistPtLn(element1, mgeom2, element1, mgeom1, offset);
-            newDispDim = new skDispDistPtLn(newDim);
+            newDispDim = new skDispDistPtLn(dispElement1, name1, dispElement2, name2, newDim);
         }
         // distance-point-point
         //
@@ -710,38 +719,29 @@ function skCreateDimensionCommand() {
         this._highlightGeom = null;
 
         var hitResult = project.hitTest(event.point, hitOptions);
-        if (hitResult && hitResult.item && hitResult.item.dispElement) {
+        if (hitResult && hitResult.item && hitResult.item.name && hitResult.item.dispElement) {
             var dispElement = hitResult.item.dispElement;
-            var geom = dispElement.getConstrainableGeometry(hitResult.item, event.point)
+            var name = hitResult.item.name;
+            var geom = dispElement.getConstrainableGeometry(name);
             if (geom && this.isOKToBeSelected(geom)) {
-                this._highlightGeom = new skHighlightGeometry(geom, dispElement.skElement(), hitResult.item);
-                this._highlightGeom.setAsHighlightedColor();
-                this._highlightGeom.pathItem().removeOnMove();
+                this._highlightGeom = new skHighlightGeometry(dispElement, name, "highlight");
             }
         }
     }
 
     this.onMouseDown = function (event) {
         if (this._highlightGeom) {
-            var selectedHighlightGeom = new skHighlightGeometry(this._highlightGeom.mathGeom(),
-                                                        this._highlightGeom.skElement(),
-                                                        this._highlightGeom.originalHitPathItem())
-            selectedHighlightGeom.setAsSelectedColor();
-            this.addSelectedHighlightGeom(selectedHighlightGeom);
+            var selHghlghtGeom = new skHighlightGeometry(this._highlightGeom.dispElement(),
+                                                         this._highlightGeom.name(),
+                                                         "selected");
+            this.addSelectedHighlightGeom(selHghlghtGeom);
 
             if (this._selectedHighlightGeoms.length == 2) {
                 // create the dimension object
-                var newDispDim = this.makeDimension(this._selectedHighlightGeoms[0].skElement(),
-                                                    this._selectedHighlightGeoms[0].mathGeom(),
-                                                    this._selectedHighlightGeoms[1].skElement(),
-                                                    this._selectedHighlightGeoms[1].mathGeom());
-
-                newDispDim.addOrgSelPathItem(this._selectedHighlightGeoms[0].originalHitPathItem());
-                newDispDim.addOrgSelPathItem(this._selectedHighlightGeoms[1].originalHitPathItem());
-                newDispDim.addHighlightPathItem(this._selectedHighlightGeoms[0].pathItem());
-                newDispDim.addHighlightPathItem(this._selectedHighlightGeoms[1].pathItem());
-
-                this.clear();
+                var newDispDim = this.makeDimension(this._selectedHighlightGeoms[0].dispElement(),
+                                                    this._selectedHighlightGeoms[0].name(),
+                                                    this._selectedHighlightGeoms[1].dispElement(),
+                                                    this._selectedHighlightGeoms[1].name());
 
                 rnController.setActiveCommand(new skEditDispDimensionCommand(newDispDim, this));
             }
@@ -773,13 +773,58 @@ function skCreateDimensionCommand() {
         }
     }
 
-    this.terminate = function () {
-        this.cleanDispGeoms();
+    this.onActivate = function () {
+        this.clear();
     }
 
 }
 
 skCreateDimensionCommand.prototype = new skCommand();
+
+
+//-------------------------------------------------
+//
+//	highlight geometry -- utility class in skCreateDimensionCommand
+//
+//-------------------------------------------------
+
+function skHighlightGeometry(dispElement, name, type) {
+    this._dispElement = dispElement;
+    this._name = name;
+
+    this._highlightPathItem = dispElement.getConstrainedPathItem(name).clone();
+
+    var color;
+    if (type === "highlight") {
+        color = "red";
+        this._highlightPathItem.removeOnMove();
+    }
+    else if (type === "selected")
+        color = "blue";
+
+    this._highlightPathItem.style = {
+        fillColor: color,
+        strokeColor: color,
+        strokeWidth: 3
+    }
+    this._highlightPathItem.visible = true;
+
+    this.dispElement = function () {
+        return this._dispElement;
+    }
+
+    this.name = function () {
+        return this._name;
+    }
+
+    this.mathGeom = function () {
+        return this._dispElement.getConstrainableGeometry(this._name);
+    }
+
+    this.highlightPathItem = function () {
+        return this._highlightPathItem;
+    }
+}
 
 //-------------------------------------------------
 //
@@ -807,7 +852,6 @@ function skEditDispDimensionCommand(dispDim, prevCommand) {
 
     this.onMouseDown = function (event) {
         this._dispDim.draw(event.point);
-        this._dispDim.removeHighlightPathItems();
         rnController.setActiveCommand(this._prevCommand);
     }
 

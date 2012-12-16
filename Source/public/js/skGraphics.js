@@ -158,6 +158,9 @@ function skDispElement(element) {
             oldBoundingBox = null;
         }
     }
+
+    this.getConstrainableGeometry = function (name) { return null; }
+    this.getConstrainedPathItem = function (name) { return null; }
 }
 
 //-------------------------------------------------
@@ -170,6 +173,11 @@ function skInvisibleCenterPoint(pt, owningDispElement) {
     this._pathItem = new Path.Circle(pt, 4);
     this._pathItem.invisibleCenter = true;
     this._pathItem.dispElement = owningDispElement;
+    this._pathItem.name = "invisibleCenter";
+
+    this.pathItem = function () {
+        return this._pathItem;
+    }
 }
 
 
@@ -188,6 +196,7 @@ function skDispPoint(pt) {
 
         this._pathItem = new Path.Circle(pt1, 4);
         this._pathItem.dispElement = this;
+        this._pathItem.name = "point";
         this._boundingBox = null; //new skLineBounds(this);
 
         this.setDrawingStyle(this._pathItem, this.skElement());
@@ -205,12 +214,20 @@ function skDispPoint(pt) {
         return tempPathItem;
     }
     
-    this.getConstrainableGeometry = function (pathItem, point) {
-		if (pathItem.dispElement) {			
-			var pt = pathItem.position;
+    this.getConstrainableGeometry = function (name) {
+		if (name === "point") {			
+			var pt = this._pathItem.position;
             return skConv.toMathPoint(pt);
-        }        
-        return null;
+		}
+		else
+		    return null;
+    }
+
+    this.getConstrainedPathItem = function (name) {
+        if (name === "point")
+            return this._pathItem;
+        else
+            return null;
     }
 
     this.init();
@@ -234,6 +251,7 @@ function skDispLineSegment(lnSeg) {
 
         this._pathItem = new Path.Line(pt1, pt2);
         this._pathItem.dispElement = this;
+        this._pathItem.name = "line";
         this._boundingBox = new skLineBounds(this);
 
         this.setDrawingStyle(this._pathItem, this.skElement());
@@ -245,20 +263,28 @@ function skDispLineSegment(lnSeg) {
         return tempPathItem;
     }
     
-    this.getConstrainableGeometry = function (pathItem, point) {
-        if (pathItem.owningBBoxElement) {
-            var bboxElement = pathItem.owningBBoxElement;
-            if (bboxElement instanceof skBBoxLineEndPt) {
-                return skConv.toMathPoint(pathItem.position);
-            }
+    this.getConstrainableGeometry = function (name) {
+        if (name === "startPt" || name === "endPt") {
+            return this._boundingBox.getConstrainableGeometry(name);
         }
-        else if (pathItem.dispElement) {
-            var pt1 = pathItem.firstSegment.point;
-            var pt2 = pathItem.lastSegment.point;
+        else if (name === "line") {
+            var pt1 = this.pathItem().firstSegment.point;
+            var pt2 = this.pathItem().lastSegment.point;
             return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
         }
-        
-        return null;
+        else
+            return null;
+    }
+
+    this.getConstrainedPathItem = function (name) {
+        if (name === "startPt" || name === "endPt") {
+            return this._boundingBox.getConstrainedPathItem(name);
+        }
+        else if (name === "line") {
+            return this._pathItem;
+        }
+        else
+            return null;
     }
 
     this.init();
@@ -299,12 +325,20 @@ function skDispOval(oval) {
         return tempPathItem;
     }
     
-    this.getConstrainableGeometry = function (pathItem, point) {
-        if (pathItem.invisibleCenter) {
-            var center = pathItem.position;
-            return skConv.toMathPoint(center);
-        }        
-        return null;
+    this.getConstrainableGeometry = function (name) {
+        if (name === "invisibleCenter") {
+            return skConv.toMathPoint(this._invisibleCenter.pathItem().position);
+        }
+        else
+            return null;
+    }
+
+    this.getConstrainedPathItem = function (name) {
+        if (name === "invisibleCenter") {
+            return this._invisibleCenter.pathItem();
+        }
+        else
+            return null;
     }
 
     this.init();
@@ -342,21 +376,12 @@ function skDispRectangle(rect) {
         return tempPathItem;
     }
     
-    this.getConstrainableGeometry = function (pathItem, point) {
-        if (pathItem.owningBBoxElement) {
-            var bboxElement = pathItem.owningBBoxElement;
-            if (bboxElement instanceof skBBoxEdge) {
-                var pt1 = pathItem.firstSegment.point;
-                var pt2 = pathItem.lastSegment.point;
-                return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
-            }
-            else if (bboxElement instanceof skBBoxCornerPt) {
-                var pt = pathItem.position;
-                return skConv.toMathPoint(pt);            
-            }        
-        }
-        
-        return null;
+    this.getConstrainableGeometry = function (name) {
+        return this._boundingBox.getConstrainableGeometry(name);
+    }
+
+    this.getConstrainedPathItem = function (name) {
+        return this._boundingBox.getConstrainedPathItem(name);
     }
 
     this.init();
@@ -393,6 +418,17 @@ function skBoundingBox(displayElement) {
             this._items[i].visible = b;
         }
     }
+
+    this.getPathItemByName = function (pItemName) {
+        var pathItem = null;
+        var i;
+        for (i = 0; i < this._items.length; i++) {
+            if (this._items[i].name === pItemName) {
+                pathItem = this._items[i];
+            }
+        }
+        return pathItem;
+    }
 }
 
 //-------------------------------------------------
@@ -406,8 +442,8 @@ function skLineBounds(dispLine) {
 
     var pathLine = dispLine.pathItem();    
     var linkedList = new skLinkedList();
-    linkedList.push(new skBBoxLineEndPt(pathLine.firstSegment.point, this));
-    linkedList.push(new skBBoxLineEndPt(pathLine.lastSegment.point, this));
+    linkedList.push(new skBBoxLineEndPt(pathLine.firstSegment.point, this, "startPt"));
+    linkedList.push(new skBBoxLineEndPt(pathLine.lastSegment.point, this, "endPt"));
 
     var start = linkedList.head();
     var end = linkedList.head().next;
@@ -423,6 +459,19 @@ function skLineBounds(dispLine) {
     this.move = function (delta) {
         start.move(delta);
         end.move(delta);
+    }
+
+    this.getConstrainableGeometry = function (name) {
+        if (name === "startPt")
+            return skConv.toMathPoint(this.defPt1());
+        else if (name === "endPt")
+            return skConv.toMathPoint(this.defPt2());
+        else
+            return null;
+    }
+
+    this.getConstrainedPathItem = function (name) {
+        return this.getPathItemByName(name);
     }
 }
 
@@ -451,27 +500,27 @@ function skRectBounds(dispElement) {
 
     // create edges
     //
-    new skBBoxEdge(rect.topLeft, rect.bottomLeft, this);
-    new skBBoxEdge(rect.bottomLeft, rect.bottomRight, this);
-    new skBBoxEdge(rect.bottomRight, rect.topRight, this);
-    new skBBoxEdge(rect.topRight, rect.topLeft, this);
-    new skBBoxEdge(handleStart, handleEnd, this);
+    new skBBoxEdge(rect.topLeft, rect.bottomLeft, this, "left");
+    new skBBoxEdge(rect.bottomLeft, rect.bottomRight, this, "bottom");
+    new skBBoxEdge(rect.bottomRight, rect.topRight, this, "right");
+    new skBBoxEdge(rect.topRight, rect.topLeft, this, "top");
+    new skBBoxEdge(handleStart, handleEnd, this, "handle");
 
     // create handle end point
     //
-    new skBBoxHandleEndPt(handleEnd, this);
+    new skBBoxHandleEndPt(handleEnd, this, "handleEnd");
 
     // create corner points and mid points
     //
     var linkedList = new skLinkedList();
-    linkedList.push(new skBBoxCornerPt(rect.topLeft, this));
-    linkedList.push(new skBBoxEdgeMidPt(rect.leftCenter, this));
-    linkedList.push(new skBBoxCornerPt(rect.bottomLeft, this));
-    linkedList.push(new skBBoxEdgeMidPt(rect.bottomCenter, this));
-    linkedList.push(new skBBoxCornerPt(rect.bottomRight, this));
-    linkedList.push(new skBBoxEdgeMidPt(rect.rightCenter, this));
-    linkedList.push(new skBBoxCornerPt(rect.topRight, this));
-    linkedList.push(new skBBoxEdgeMidPt(rect.topCenter, this));
+    linkedList.push(new skBBoxCornerPt(rect.topLeft, this, "topLeft"));
+    linkedList.push(new skBBoxEdgeMidPt(rect.leftCenter, this, "leftCenter"));
+    linkedList.push(new skBBoxCornerPt(rect.bottomLeft, this, "bottomLeft"));
+    linkedList.push(new skBBoxEdgeMidPt(rect.bottomCenter, this, "bottomCenter"));
+    linkedList.push(new skBBoxCornerPt(rect.bottomRight, this, "bottomRight"));
+    linkedList.push(new skBBoxEdgeMidPt(rect.rightCenter, this, "rightCenter"));
+    linkedList.push(new skBBoxCornerPt(rect.topRight, this, "topRight"));
+    linkedList.push(new skBBoxEdgeMidPt(rect.topCenter, this, "topCenter"));
 
     this.oppositeBBoxElement = function (bboxElement) {
         return bboxElement.next.next.next.next;
@@ -509,6 +558,30 @@ function skRectBounds(dispElement) {
     this.setCenter = function (pt) {        // center is always global
         this._center = pt;
     }
+
+    this.getConstrainableGeometry = function (pItemName) {
+        var pathItem = this.getPathItemByName(pItemName);
+        if (pItemName === "topLeft" || 
+            pItemName === "bottomLeft" ||
+            pItemName === "bottomRight" ||
+            pItemName === "topRight")
+        {
+            return skConv.toMathPoint(pathItem.position);
+        }
+        else if (pItemName === "left" ||
+                 pItemName === "bottom" ||
+                 pItemName === "right" ||
+                 pItemName === "top")
+        {
+            var pt1 = pathItem.firstSegment.point;
+            var pt2 = pathItem.lastSegment.point;
+            return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
+        }
+    }
+
+    this.getConstrainedPathItem = function (name) {
+        return this.getPathItemByName(name);
+    }
 }
 
 skRectBounds.prototype = new skBoundingBox();
@@ -533,11 +606,16 @@ function skBBoxElement() {
         return 4;
     }
 
-    this.init = function (pt, pathItem, bbox) {
+    this.init = function (pt, pathItem, bbox, elementName) {
         this.position = pt;
         this._pathItem = pathItem;
         this._pathItem.owningBBoxElement = this;
+        this._pathItem.name = elementName;
         this.setBoundingBox(bbox);
+    }
+
+    this.pathItem = function () {
+        return this._pathItem;
     }
 }
 
@@ -548,7 +626,7 @@ function skBBoxElement() {
 //
 //-------------------------------------------------
 
-function skBBoxHandleEndPt(pt, bbox) {
+function skBBoxHandleEndPt(pt, bbox, name) {
     skBBoxElement.call(this);
 
     var pathItem = Path.Circle(pt, this.r());
@@ -559,7 +637,7 @@ function skBBoxHandleEndPt(pt, bbox) {
         opacity: 0.5
     };
 
-    this.init(pt, pathItem, bbox);
+    this.init(pt, pathItem, bbox, name);
     this.isHandlePt = true;
 
     this.setCursorStyle = function () {
@@ -575,7 +653,7 @@ skBBoxHandleEndPt.prototype = new skBBoxElement();
 //
 //-------------------------------------------------
 
-function skBBoxEdge(pt1, pt2, bbox) {
+function skBBoxEdge(pt1, pt2, bbox, name) {
     skBBoxElement.call(this);
 
     var pathItem = new Path.Line(pt1, pt2);
@@ -585,7 +663,7 @@ function skBBoxEdge(pt1, pt2, bbox) {
         opacity: 0.5
     };
 
-    this.init(pt1, pathItem, bbox);
+    this.init(pt1, pathItem, bbox, name);
 
     this.setCursorStyle = function () {
         // none-op
@@ -656,7 +734,7 @@ skBBoxAnchorPt.prototype = new skBBoxElement();
 //
 //-------------------------------------------------
 
-function skBBoxCornerPt(pt, bbox) {
+function skBBoxCornerPt(pt, bbox, name) {
     skBBoxAnchorPt.call(this);
 
     var pathItem = Path.Circle(pt, this.r());
@@ -667,7 +745,7 @@ function skBBoxCornerPt(pt, bbox) {
         opacity: 0.5
     };
 
-    this.init(pt, pathItem, bbox);
+    this.init(pt, pathItem, bbox, name);
 
     this.getVector = function () {
         var cornerPt = this.globalPos();
@@ -697,7 +775,7 @@ skBBoxCornerPt.prototype = new skBBoxAnchorPt();
 //
 //-------------------------------------------------
 
-function skBBoxEdgeMidPt(pt, bbox) {
+function skBBoxEdgeMidPt(pt, bbox, name) {
     skBBoxAnchorPt.call(this);
 
     var pathItem = new Path.Rectangle(pt.x - this.r(), pt.y - this.r(), 2*this.r(), 2*this.r());
@@ -708,7 +786,7 @@ function skBBoxEdgeMidPt(pt, bbox) {
         opacity: 0.5
     };
 
-    this.init(pt, pathItem, bbox);
+    this.init(pt, pathItem, bbox, name);
 
     this.getVector = function () {
         var edgePt = this.globalPos();
@@ -768,7 +846,7 @@ skBBoxEdgeMidPt.prototype = new skBBoxAnchorPt();
 //
 //-------------------------------------------------
 
-function skBBoxLineEndPt(pt, bbox) {
+function skBBoxLineEndPt(pt, bbox, name) {
     skBBoxAnchorPt.call(this);
 
     var pathItem = Path.Circle(pt, this.r());
@@ -779,7 +857,7 @@ function skBBoxLineEndPt(pt, bbox) {
         opacity: 0.5
     };
 
-    this.init(pt, pathItem, bbox);
+    this.init(pt, pathItem, bbox, name);
 
     this.setCursorStyle = function () {
         var pt1 = this.position;
@@ -836,73 +914,15 @@ function skLinkedList() {
 
 //-------------------------------------------------
 //
-//	highlight geometry -- currently only used in skCreateDimensionCommand
-//
-//-------------------------------------------------
-
-function skHighlightGeometry(mgeom, skelement, hitPathItem) {
-    this._mathGeom = mgeom;
-    this._skElement = skelement;
-    this._originalHitPathItem = hitPathItem;
-    this._pathItem = null;    
-
-    this.mathGeom = function () {
-        return this._mathGeom;
-    }
-
-    this.skElement = function () {
-        return this._skElement;
-    }
-
-    this.originalHitPathItem = function () {
-        return this._originalHitPathItem;
-    }
-
-    this.pathItem = function () {
-        return this._pathItem;
-    }
-
-    this.setAsHighlightedColor = function () {
-        if (this._pathItem) {
-            this._pathItem.style = {
-                fillColor: 'red',
-                strokeColor: 'red',
-                strokeWidth: 3
-            };
-        }
-    }
-
-    this.setAsSelectedColor = function () {
-        if (this._pathItem) {
-            this._pathItem.style = {
-                fillColor: 'blue',
-                strokeColor: 'blue',
-                strokeWidth: 3
-            }
-        }
-    }
-
-    // create the path item
-    //
-    var pItem;
-    if (mgeom instanceof skMPoint) {
-        pItem = new Path.Circle(skConv.toPaperPoint(mgeom), 3);
-    }
-    else if (mgeom instanceof skMLineSegment) {
-        pItem = new Path.Line(skConv.toPaperPoint(mgeom.startPt()),
-                                 skConv.toPaperPoint(mgeom.endPt()));
-    }
-
-    this._pathItem = pItem;
-}
-
-//-------------------------------------------------
-//
 //	skDispConstraint: the display object of dimensions and constraints
 //
 //-------------------------------------------------
 
-function skDispConstraint(skCon) {
+function skDispConstraint(dispElement1, name1, dispElement2, name2, skCon) {
+    this._dispElement1 = dispElement1;
+    this._dispElement2 = dispElement2;
+    this._name1 = name1;
+    this._name2 = name2;
     this._skConstraint = skCon;
     this._pathItems = [];
 
@@ -949,32 +969,12 @@ function skDispConstraint(skCon) {
 //
 //-------------------------------------------------
 
-function skDispDimension(skDim) {
-    skDispConstraint.call(this, skDim);
+function skDispDimension(dispElement1, name1, dispElement2, name2, skDim) {
+    skDispConstraint.call(this, dispElement1, name1, dispElement2, name2, skDim);
     this._textPos = null;
-    this._orgSelectedPathItems = [];
-    this._highlightPathItems = [];
 
     this.textPos = function () {
         return this._textPos;
-    }
-
-    this.addOrgSelPathItem = function (pathItem) {
-        this._orgSelectedPathItems.push(pathItem);
-    }
-
-    this.addHighlightPathItem = function (pathItem) {
-        this._highlightPathItems.push(pathItem);
-    }
-
-    this.removeHighlightPathItems = function () {
-        if (this._highlightPathItems.length > 0) {
-            var i;
-            for (i = 0; i < this._highlightPathItems.length; i++)
-                this._highlightPathItems[i].remove();
-
-            this._highlightPathItems.splice(0, this._highlightPathItems.length);
-        }
     }
 
     this.evaluateDefPoints = function (pos) { };
@@ -1023,7 +1023,6 @@ function skDispDimension(skDim) {
     // this is a workaround to the limitation of paper.js library
     //
     this.adjustPathItemOrder = function () {
-
         var allDimItems = this.pathItems();
         var i;
         var mostAboveItem = allDimItems[0];
@@ -1032,10 +1031,10 @@ function skDispDimension(skDim) {
                 mostAboveItem = allDimItems[i];
         }
 
-        var selItem1 = this._orgSelectedPathItems[0];
-        var selItem2 = this._orgSelectedPathItems[1];
-        selItem1.moveAbove(mostAboveItem);
-        selItem2.moveAbove(mostAboveItem);
+        var pathItem1 = this._dispElement1.getConstrainedPathItem(name1);
+        var pathItem2 = this._dispElement2.getConstrainedPathItem(name2);
+        pathItem1.moveAbove(mostAboveItem);
+        pathItem2.moveAbove(mostAboveItem);        
     }
 }
 
@@ -1047,8 +1046,8 @@ skDispDimension.prototype = new skDispConstraint();
 //
 //-------------------------------------------------
 
-function skDispLinearDimension(skDim) {
-    skDispDimension.call(this, skDim);
+function skDispLinearDimension(dispElement1, name1, dispElement2, name2, skDim) {
+    skDispDimension.call(this, dispElement1, name1, dispElement2, name2, skDim);
 
     this._dimPt1 = null;
     this._dimPt2 = null;
@@ -1156,8 +1155,8 @@ skDispLinearDimension.prototype = new skDispDimension();
 //
 //-------------------------------------------------
 
-function skDispDistPtLn(skDim) {
-    skDispLinearDimension.call(this, skDim);
+function skDispDistPtLn(dispElement1, name1, dispElement2, name2, skDim) {
+    skDispLinearDimension.call(this, dispElement1, name1, dispElement2, name2, skDim);
 
     this.evaluateDefPoints = function (pos) {
         var mPt, mLnSeg;
