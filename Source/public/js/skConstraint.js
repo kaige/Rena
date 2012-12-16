@@ -194,7 +194,7 @@ function skConstraintSolveContext(skapp) {
             var oldPos = allEntries[i].oldPos();
             var newPos = allEntries[i].firstSolverGeometry().pos();
             var delta = newPos.subtract(oldPos);
-            element.move(delta);
+            element.move(delta.x(), delta.y());
         }
     }
 

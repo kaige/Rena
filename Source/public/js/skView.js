@@ -221,6 +221,8 @@ function skController() {
 
     this.updateSkElementPos = function () {
         rnApp.update();
+        this.updateConstraintsDefinition();
+        this.deselectAll();
     }
 }
 
@@ -772,7 +774,7 @@ function skCreateDimensionCommand() {
 
                 var editBoxHandler = function (response) {
                     if (response !== null) {
-                        dispDim.skConstraint().setOffset(new Number(response));
+                        dispDim.skConstraint().setOffset(parseFloat(response));
                         dispDim.draw(dispDim.textPos());
                         rnController.updateSkElementPos();
                         view.draw();
