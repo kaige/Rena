@@ -209,6 +209,15 @@ function skController() {
         }
         return selected;
     }
+
+    this.updateConstraintsDefinition = function () {
+        var all = rnGraphicsManager.dispConstraints();
+        var i = 0;
+        for (i = 0; i < all.length; i++) {
+            all[i].updateConstraintDefinition();
+            all[i].draw(all[i].pos());
+        }
+    }
 }
 
 //-------------------------------------------------
@@ -536,6 +545,8 @@ function skEditGeomCommand(pathItem) {
         skElement.reset(skConv.toMathPoint(BBox.defPt1()), skConv.toMathPoint(BBox.defPt2()));
         rnController.setActiveCommand(new skSelectGeomCommand());
         dispElement.setIsSelected(true);
+
+        rnController.updateConstraintsDefinition();
     }
 
     this.editBoundingBox = function (event) { }
@@ -743,6 +754,8 @@ function skCreateDimensionCommand() {
                                                     this._selectedHighlightGeoms[1].dispElement(),
                                                     this._selectedHighlightGeoms[1].name());
 
+                rnGraphicsManager.addDispConstraint(newDispDim);
+                rnApp.addConstraint(newDispDim.skConstraint());
                 rnController.setActiveCommand(new skEditDispDimensionCommand(newDispDim, this));
             }
         }

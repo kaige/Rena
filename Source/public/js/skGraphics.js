@@ -7,6 +7,7 @@
 function skGraphicsManager() {
 
     this._dispElements = [];
+    this._dispConstraints = [];
 	
 	// set up paper with canvas
 	//
@@ -54,6 +55,14 @@ function skGraphicsManager() {
 
 	this.addDispElement = function (dispElement) {
 	    this._dispElements.push(dispElement);
+	}
+
+	this.dispConstraints = function () {
+	    return this._dispConstraints;
+	}
+
+	this.addDispConstraint = function (dispConstraint) {
+	    this._dispConstraints.push(dispConstraint);
 	}
 	
 	this.drawingCanvas = function () {
@@ -961,6 +970,19 @@ function skDispConstraint(dispElement1, name1, dispElement2, name2, skCon) {
             }
         }
     }
+
+    this.pos = function () { return null;}
+    this.draw = function (pos) { }
+
+    // here we let display Constraint to update the math geometry of the skConstraint,
+    // which is not a good design. I'll revisit this later.
+    //
+    this.updateConstraintDefinition = function () {
+        var mgeom1 = this._dispElement1.getConstrainableGeometry(name1);
+        var mgeom2 = this._dispElement2.getConstrainableGeometry(name2);
+        this._skConstraint.setGeom1(mgeom1);
+        this._skConstraint.setGeom2(mgeom2);
+    }
 }
 
 //-------------------------------------------------
@@ -975,6 +997,10 @@ function skDispDimension(dispElement1, name1, dispElement2, name2, skDim) {
 
     this.textPos = function () {
         return this._textPos;
+    }
+
+    this.pos = function () {
+        return this.textPos();
     }
 
     this.evaluateDefPoints = function (pos) { };
