@@ -222,7 +222,6 @@ function skController() {
     this.updateSkElementPos = function () {
         rnApp.update();
         this.updateConstraintsDefinition();
-        this.deselectAll();
     }
 }
 
@@ -552,8 +551,13 @@ function skEditGeomCommand(pathItem) {
         rnController.setActiveCommand(new skSelectGeomCommand());
         dispElement.setIsSelected(true);
 
+        // temporarily set the edited element as grounded.
+        // I don't plan to enable user to ground an element, which makes the system complex hence reduce EOU.
+        //
+        skElement.setGrounded(true);           
         rnController.updateConstraintsDefinition();
         rnController.updateSkElementPos();
+        skElement.setGrounded(false);
     }
 
     this.editBoundingBox = function (event) { }
@@ -660,6 +664,7 @@ function skCreateDimensionCommand() {
 
     var canvas = rnGraphicsManager.drawingCanvas();
     canvas.style.cursor = "default";
+    rnController.deselectAll();
 
     this.addSelectedHighlightGeom = function (g) {
         this._selectedHighlightGeoms.push(g);
@@ -677,16 +682,23 @@ function skCreateDimensionCommand() {
         this._highlightGeom = null;
     }
 
-    this.isOKToBeSelected = function (geom) {
+    this.isOKToBeSelected = function (dispElement, name) {
         if (this._selectedHighlightGeoms.length == 0)
             return true;
         else if (this._selectedHighlightGeoms.length == 1) {
+            var firstElement = this._selectedHighlightGeoms[0].dispElement().skElement();
             var firstGeom = this._selectedHighlightGeoms[0].mathGeom();
+            
+            var secondElement = dispElement.skElement();
+            var secondGeom = dispElement.getConstrainableGeometry(name);
+            
+            if (firstElement === secondElement)
+                return false;
 
             // filters of the allowed types of geometries to be selected
             //
-            if (firstGeom instanceof skMPoint && geom instanceof skMLineSegment ||  //distance-point-line
-                firstGeom instanceof skMLineSegment && geom instanceof skMPoint)
+            if (firstGeom instanceof skMPoint && secondGeom instanceof skMLineSegment ||  //distance-point-line
+                firstGeom instanceof skMLineSegment && secondGeom instanceof skMPoint)
                 return true;
             else
                 return false;
@@ -740,8 +752,7 @@ function skCreateDimensionCommand() {
         if (hitResult && hitResult.item && hitResult.item.name && hitResult.item.dispElement) {
             var dispElement = hitResult.item.dispElement;
             var name = hitResult.item.name;
-            var geom = dispElement.getConstrainableGeometry(name);
-            if (geom && this.isOKToBeSelected(geom)) {
+            if (this.isOKToBeSelected(dispElement, name)) {
                 this._highlightGeom = new skHighlightGeometry(dispElement, name, "highlight");
             }
         }
@@ -798,6 +809,12 @@ function skCreateDimensionCommand() {
 
     this.onActivate = function () {
         this.clear();
+    }
+    
+    this.onTerminate = function () {
+        if (this._selectedHighlightGeoms.length == 1) {
+            this.clear();
+        }
     }
 
 }

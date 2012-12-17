@@ -153,8 +153,10 @@ function skDispElement(element) {
     this.regenerate = function () {
         var oldPathItem = this._pathItem;
         var oldBoundingBox = this._boundingBox;
+        var oldVisibility = this._boundingBox.visibility();
         
         this.init();
+        this._boundingBox.setVisible(oldVisibility);
 
         if (oldPathItem) {
             this._pathItem.moveAbove(oldPathItem);  // this keeps the order of the path item
@@ -438,6 +440,15 @@ function skBoundingBox(displayElement) {
             }
         }
         return pathItem;
+    }
+    
+    this.visibility = function() {
+        var i;
+        if (this._items.length == 0)
+            return false;
+        else
+            return this._items[0].visible;
+        
     }
 }
 
