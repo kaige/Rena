@@ -43,8 +43,9 @@ function skConstraint(element1, geom1, element2, geom2, offset) {
         this._geom2 = g2;
     }
 
-    this.load = function (solveContext) {  }
-
+    this.load = function (solveContext) { }
+    this.onEditOffsetValue = function () { }
+    this.afterEditOffsetValue = function () { }
 }
 
 //-------------------------------------------------
@@ -80,6 +81,8 @@ skLinearDimension.prototype = new skDimension();
 function skDistPtLn(element1, geom1, element2, geom2, offset) {
     skLinearDimension.call(this, element1, geom1, element2, geom2, offset);
 
+    this._tempGroundElements = [];
+
     this.load = function (solveContext) {
         var gcSolver = solveContext.solver();
 
@@ -92,6 +95,19 @@ function skDistPtLn(element1, geom1, element2, geom2, offset) {
         solveContext.addElementToGeometryMap(this.element2(), sLn);
 
         var con = gcSolver.createDistPtLn(sPt, sLn, this.offset());
+    }
+
+    this.onEditOffsetValue = function () {
+        if (!this.element1().grounded() && !this.element2().grounded()) {
+            this.element2().setGrounded(true);
+            this._tempGroundElements.push(this.element2());
+        }
+    }
+
+    this.afterEditOffsetValue = function () {
+        var i;
+        for (i = 0; i < this._tempGroundElements.length; i++)
+            this._tempGroundElements[i].setGrounded(false);
     }
 }
 

@@ -775,9 +775,11 @@ function skCreateDimensionCommand() {
                 var editBoxHandler = function (response) {
                     if (response !== null) {
                         dispDim.skConstraint().setOffset(parseFloat(response));
-                        dispDim.draw(dispDim.textPos());
+                        dispDim.skConstraint().onEditOffsetValue();
+                        dispDim.draw(dispDim.textPos());                        
                         rnController.updateSkElementPos();
                         view.draw();
+                        dispDim.skConstraint().afterEditOffsetValue();
                     }
                 }
 
