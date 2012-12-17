@@ -198,7 +198,8 @@ function skConstraintSolveContext(skapp) {
     }
 
     this.solve = function () {
-        this.cacheElementsOldPos();
+        this.cacheElementsOldPos();     // so we have a base to move from after the solution is out
+        this.groupSolverGeometries();
         this._gcSolver.solve();
     }
 
@@ -219,6 +220,22 @@ function skConstraintSolveContext(skapp) {
         var i;
         for (i = 0; i < allEntries.length; i++)
             allEntries[i].setOldPos(allEntries[i].firstSolverGeometry().pos());
+    }
+
+    this.groupSolverGeometries = function () {
+        var allEntries = this._elementToGeomMap.entries();
+        var i;
+        for (i = 0; i < allEntries.length; i++) {
+            var entry = allEntries[i];
+            var geoms = entry.solverGeometries();
+            if (geoms.length > 1) {
+                var group = this._gcSolver.createGroup();   // group all solver geometries of one element so they move together
+                var j;
+                for (j = 0; j < geoms.length; j++) {
+                    group.add(geoms[j]);
+                }
+            }
+        }
     }
 
     this.addElementToGeometryMap = function (element, sgeom) {

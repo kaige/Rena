@@ -136,6 +136,10 @@ function skMLine(pt, vec) {
         var dist = Math.sqrt(q.dot(q) - lateral * lateral);
         return dist;
     }
+
+    this.move = function (dx, dy) {
+        this._startPt.move(dx, dy);
+    }
 }
 
 
