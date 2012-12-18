@@ -109,6 +109,11 @@ function skMPoint(x, y) {
 	this.mid = function (pt) {
 	    return new skMPoint(0.5*(this._x + pt._x), 0.5*(this._y + pt._y));
 	}
+	
+    this.reset = function (pt1, pt2) {
+	    this._x = pt1._x;
+	    this._y = pt1._y;
+	}
 }
 
 //-------------------------------------------------

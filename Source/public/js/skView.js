@@ -683,8 +683,14 @@ function skCreateDimensionCommand() {
     }
 
     this.isOKToBeSelected = function (dispElement, name) {
-        if (this._selectedHighlightGeoms.length == 0)
-            return true;
+        if (this._selectedHighlightGeoms.length == 0) {
+            var element = dispElement.skElement();
+            var geom = dispElement.getConstrainableGeometry(name);
+            if (element && geom)
+               return true;
+            else
+               return false;
+        }
         else if (this._selectedHighlightGeoms.length == 1) {
             var firstElement = this._selectedHighlightGeoms[0].dispElement().skElement();
             var firstGeom = this._selectedHighlightGeoms[0].mathGeom();

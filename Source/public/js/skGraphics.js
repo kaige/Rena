@@ -207,13 +207,12 @@ function skDispPoint(pt) {
 
         this._pathItem = new Path.Circle(pt1, 4);
         this._pathItem.dispElement = this;
-        this._pathItem.name = "point";
-        this._boundingBox = null; //new skLineBounds(this);
+        this._boundingBox = new skPointBounds(this);
 
         this.setDrawingStyle(this._pathItem, this.skElement());
 		this._pathItem.style = {
-			fillColor: '#C5E6EA',
-			strokeColor: '#385D8A',
+			fillColor: 'black',
+			strokeColor: 'black',
 			strokeWidth: 1,
 			opacity: 0.5
 		};
@@ -226,19 +225,11 @@ function skDispPoint(pt) {
     }
     
     this.getConstrainableGeometry = function (name) {
-		if (name === "point") {			
-			var pt = this._pathItem.position;
-            return skConv.toMathPoint(pt);
-		}
-		else
-		    return null;
+        return this._boundingBox.getConstrainableGeometry(name);
     }
 
     this.getConstrainedPathItem = function (name) {
-        if (name === "point")
-            return this._pathItem;
-        else
-            return null;
+        return this._boundingBox.getConstrainedPathItem(name);
     }
 
     this.init();
@@ -454,6 +445,47 @@ function skBoundingBox(displayElement) {
 
 //-------------------------------------------------
 //
+//	bounding box for point
+//
+//-------------------------------------------------
+
+function skPointBounds(dispPoint) {
+    skBoundingBox.call(this, dispPoint);
+
+    var pathPoint = dispPoint.pathItem();    
+    var linkedList = new skLinkedList();
+    linkedList.push(new skBBoxPointPt(pathPoint.position, this, "point"));
+    
+    var start = linkedList.head();
+
+    this.defPt1 = function () {
+        return start.position;
+    }
+
+    this.defPt2 = function () {
+        return start.position;
+    }
+
+    this.move = function (delta) {
+        start.move(delta);
+    }
+
+    this.getConstrainableGeometry = function (name) {
+        if (name === "point")
+            return skConv.toMathPoint(this.defPt1());
+        else
+            return null;
+    }
+
+    this.getConstrainedPathItem = function (name) {
+        return this.getPathItemByName(name);
+    }
+}
+
+skPointBounds.prototype = new skBoundingBox();
+
+//-------------------------------------------------
+//
 //	bounding box for line
 //
 //-------------------------------------------------
@@ -598,6 +630,8 @@ function skRectBounds(dispElement) {
             var pt2 = pathItem.lastSegment.point;
             return new skMLineSegment(skConv.toMathPoint(pt1), skConv.toMathPoint(pt2));
         }
+        else
+            return null;
     }
 
     this.getConstrainedPathItem = function (name) {
@@ -863,7 +897,39 @@ skBBoxEdgeMidPt.prototype = new skBBoxAnchorPt();
 
 //-------------------------------------------------
 //
-//	skLineEndAnchorPoint
+//	skBBoxPointPt
+//
+//-------------------------------------------------
+
+function skBBoxPointPt(pt, bbox, name) {
+    skBBoxAnchorPt.call(this);
+
+    var pathItem = Path.Circle(pt, this.r());
+    pathItem.style = {
+        fillColor: '#C5E6EA',
+        strokeColor: '#385D8A',
+        strokeWidth: 1,
+        opacity: 0.5
+    };
+
+    this.init(pt, pathItem, bbox, name);
+
+    this.setCursorStyle = function () {
+        rnGraphicsManager.drawingCanvas().style.cursor = "move";
+    }
+
+    this.move = function (delta) {
+        this.position = this.position.add(delta);
+    }
+
+}
+
+skBBoxPointPt.prototype = new skBBoxAnchorPt();
+
+
+//-------------------------------------------------
+//
+//	skBBoxLineEndPt
 //
 //-------------------------------------------------
 
