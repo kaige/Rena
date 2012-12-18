@@ -804,6 +804,9 @@ function skCreateDimensionCommand() {
                 //
                 goog.style.setPosition(editBox.getDialogElement(), pos.x - 10, pos.y + 75);
             }
+            else {
+                rnController.setActiveCommand(new skSelectGeomCommand());
+            }
         }
     }
 
