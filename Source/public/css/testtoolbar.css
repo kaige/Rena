@@ -52,6 +52,9 @@
       background-position: 0;
     }
 	
+    .toolbar-select {
+		background-image: url(../img/toolbar/select.png);
+	}
 	.toolbar-point {
 		background-image: url(../img/toolbar/point.png);
 		/* background-image: url(../3p/closure-library/closure/goog/images/toolbar_icons.gif); */

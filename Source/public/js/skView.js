@@ -25,6 +25,7 @@ function skView() {
     this._createGeomBtnGrp = new skRadioButtonGroup();
 
     // Create toolbar buttons
+    this._createGeomBtnGrp.addRadioButton(new skCmdDefSelectGeom());
     this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
     this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateLineSegment());
     //this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateCircle());
@@ -116,8 +117,19 @@ function skCmdDef(id, tooltip, classname) {
     }
 }
 
+function skCmdDefSelectGeom() {
+    skCmdDef.call(this, "Select", "Select", "icon toolbar-select");
+
+    this.createCommand = function () {
+        var cmd = new skSelectGeomCommand();
+        this.setSelected(true);
+        return cmd;
+    }
+}
+skCmdDefSelectGeom.prototype = new skCmdDef();
+
 function skCmdDefCreatePoint() {
-    skCmdDef.call(this, "Point", "point", "icon toolbar-point");
+    skCmdDef.call(this, "Point", "Point", "icon toolbar-point");
 
     this.createCommand = function () {
         return new skCreatePointCommand();
