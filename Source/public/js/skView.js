@@ -783,12 +783,16 @@ function skCreateDimensionCommand() {
         this._highlightGeom = null;
 
         var hitResult = project.hitTest(event.point, hitOptions);
-        if (hitResult && hitResult.item && hitResult.item.name && hitResult.item.dispElement) {
-            var dispElement = hitResult.item.dispElement;
-            var name = hitResult.item.name;
-            if (this.isOKToBeSelected(dispElement, name)) {
-                this._highlightGeom = new skHighlightGeometry(dispElement, name, "highlight");
+        if (hitResult && hitResult.item && hitResult.item.dispElement) {
+        
+            var dispElement = hitResult.item.dispElement;           
+            if (hitResult.item.name) {
+                var name = hitResult.item.name;
+                if (this.isOKToBeSelected(dispElement, name)) {
+                    this._highlightGeom = new skHighlightGeometry(dispElement, name, "highlight");
+                }           
             }
+            dispElement.showConstrainablePathItems(hitResult.item.name);
         }
     }
 
@@ -798,7 +802,7 @@ function skCreateDimensionCommand() {
                                                          this._highlightGeom.name(),
                                                          "selected");
             this.addSelectedHighlightGeom(selHghlghtGeom);
-
+            
             if (this._selectedHighlightGeoms.length == 2) {
                 // create the dimension object
                 var newDispDim = this.makeDimension(this._selectedHighlightGeoms[0].dispElement(),
@@ -882,8 +886,15 @@ function skHighlightGeometry(dispElement, name, type) {
     this._highlightPathItem.style = {
         fillColor: color,
         strokeColor: color,
-        strokeWidth: 3
     }
+    if (name === "line" ||
+        name === "left" ||
+        name === "right"||
+        name === "top" ||
+        name === "bottom") {
+        this._highlightPathItem.style.strokeWidth = 3;
+    }       
+        
     this._highlightPathItem.visible = true;
 
     this.dispElement = function () {

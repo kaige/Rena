@@ -172,6 +172,19 @@ function skDispElement(element) {
 
     this.getConstrainableGeometry = function (name) { return null; }
     this.getConstrainedPathItem = function (name) { return null; }
+    this.showConstrainablePathItems = function (name) {}
+    
+    this.showConstrainblePointPathItem = function (name) {
+        var pItem = this.getConstrainedPathItem(name).clone();
+        pItem.style = {
+            fillColor: '#C5E6EA',
+            strokeColor: '#385D8A',
+            strokeWidth: 1,
+            opacity: 0.5
+        };
+        pItem.visible = true;
+        pItem.removeOnMove(); 
+    }
 }
 
 //-------------------------------------------------
@@ -288,6 +301,19 @@ function skDispLineSegment(lnSeg) {
         else
             return null;
     }
+    
+    this.showConstrainablePathItems = function (name) {
+        if (name === "line") {
+            this.showConstrainblePointPathItem("startPt");
+            this.showConstrainblePointPathItem("endPt");     
+        }
+        else if (name === "startPt") {        
+            this.showConstrainblePointPathItem("endPt");            
+        }
+        else if (name === "endPt") {            
+            this.showConstrainblePointPathItem("startPt");
+        }       
+    }
 
     this.init();
 }
@@ -342,6 +368,12 @@ function skDispOval(oval) {
         else
             return null;
     }
+    
+    this.showConstrainablePathItems = function (name) {
+        if (!name) {
+            this.showConstrainblePointPathItem("invisibleCenter");
+        }
+    }
 
     this.init();
 }
@@ -384,6 +416,24 @@ function skDispRectangle(rect) {
 
     this.getConstrainedPathItem = function (name) {
         return this._boundingBox.getConstrainedPathItem(name);
+    }
+    
+    this.showConstrainablePathItems = function (name) {
+        if (name !== "topLeft") {
+            this.showConstrainblePointPathItem("topLeft");
+        }
+        
+        if (name !== "bottomLeft") {
+            this.showConstrainblePointPathItem("bottomLeft");
+        }
+        
+        if (name !== "bottomRight") {
+            this.showConstrainblePointPathItem("bottomRight");
+        }
+        
+        if (name !== "topRight") {
+            this.showConstrainblePointPathItem("topRight"); 
+        }        
     }
 
     this.init();
