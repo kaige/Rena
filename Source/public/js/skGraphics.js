@@ -23,12 +23,6 @@ function skGraphicsManager() {
 	    if (Key.isDown('escape')) {
 	        rnController.setActiveCommand(new skSelectGeomCommand());
 	    }
-	    else if (Key.isDown('r')) {
-	        rnController.setActiveCommand(new skCreateRectangleCommand());
-	    }
-	    else if (Key.isDown('d')) {
-	        rnController.setActiveCommand(new skCreateDimensionCommand());
-	    }
 	}
 
 	tool.onMouseDown = function (event) {
@@ -46,6 +40,11 @@ function skGraphicsManager() {
 	tool.onMouseMove = function (event) {
 	    rnController.activeCommand().onMouseMove(event);
 	}
+	
+	this.doubleClickHandler = function (event) {
+	    rnController.activeCommand().onDoubleClick(event);
+	}
+	this._drawingCanvas.addEventListener('dblclick', this.doubleClickHandler);
 
     // graphics manager methods
     //

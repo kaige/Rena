@@ -253,6 +253,7 @@ function skCommand() {
     this.onMouseDrag = function (event) { }
     this.onMouseUp = function (event) { }
     this.onMouseMove = function (event) { }
+    this.onDoubleClick = function (event) {}
     this.onActivate = function () { }
     this.onTerminate = function () { }
 }
@@ -530,6 +531,15 @@ function skSelectGeomCommand() {
         //
         this._hitPathItem = null;
         rnGraphicsManager.drawingCanvas().style.cursor = "default";
+    }
+    
+    this.onDoubleClick = function (event) {
+        var hitPathItem = this._hitPathItem;
+        if (hitPathItem && hitPathItem.dispDimText) {
+            var dispDim = hitPathItem.dispDimension;
+            var pos = hitPathItem.position;
+            editDimensionValue(dispDim, pos);
+        }
     }
     
     this.onActivate = function () {
@@ -820,27 +830,7 @@ function skCreateDimensionCommand() {
             if (hitResult && hitResult.item && hitResult.item.dispDimText) {
                 var dispDim = hitResult.item.dispDimension;
                 var pos = hitResult.item.position;
-
-                var editBoxHandler = function (response) {
-                    if (response !== null) {
-                        dispDim.skConstraint().setOffset(parseFloat(response));
-                        dispDim.skConstraint().onEditOffsetValue();
-                        dispDim.draw(dispDim.textPos());                        
-                        rnController.updateSkElementPos();
-                        view.draw();
-                        dispDim.skConstraint().afterEditOffsetValue();
-                    }
-                }
-
-                var editBox = new goog.ui.Prompt('edit dimension value ', 'd= ', editBoxHandler);
-                editBox.setDefaultValue(dispDim.skConstraint().offset().toFixed(2));
-                editBox.setVisible(true);
-
-                // set dialog's position, we add a "magic" offset number here,
-                // which are actually the canvas's position in the window.
-                // In the future we should use code to calculate this number
-                //
-                goog.style.setPosition(editBox.getDialogElement(), pos.x - 10, pos.y + 75);
+                editDimensionValue(dispDim, pos);
             }
             else {
                 rnController.setActiveCommand(new skSelectGeomCommand());
@@ -912,6 +902,36 @@ function skHighlightGeometry(dispElement, name, type) {
     this.highlightPathItem = function () {
         return this._highlightPathItem;
     }
+}
+
+//-------------------------------------------------
+//
+//	editDimensionValue -- utility function used in 
+//     skCreateDimensionCommand and skSelectGeomCommand
+//
+//-------------------------------------------------
+
+function editDimensionValue(dispDim, dlgPos) {
+    var editBoxHandler = function (response) {
+        if (response !== null) {
+            dispDim.skConstraint().setOffset(parseFloat(response));
+            dispDim.skConstraint().onEditOffsetValue();
+            dispDim.draw(dispDim.textPos());                        
+            rnController.updateSkElementPos();
+            view.draw();
+            dispDim.skConstraint().afterEditOffsetValue();
+        }
+    }
+
+    var editBox = new goog.ui.Prompt('edit dimension value ', 'd= ', editBoxHandler);
+    editBox.setDefaultValue(dispDim.skConstraint().offset().toFixed(2));
+    editBox.setVisible(true);
+
+    // set dialog's position, we add a "magic" offset number here,
+    // which are actually the canvas's position in the window.
+    // In the future we should use code to calculate this number
+    //
+    goog.style.setPosition(editBox.getDialogElement(), dlgPos.x - 10, dlgPos.y + 75);
 }
 
 //-------------------------------------------------
