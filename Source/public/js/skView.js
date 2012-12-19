@@ -25,7 +25,8 @@ function skView() {
     this._createGeomBtnGrp = new skRadioButtonGroup();
 
     // Create toolbar buttons
-    this._createGeomBtnGrp.addRadioButton(new skCmdDefSelectGeom());
+    var selGeomBtn;
+    this._createGeomBtnGrp.addRadioButton(selGeomBtn = new skCmdDefSelectGeom());
     this._createGeomBtnGrp.addRadioButton(new skCmdDefCreatePoint());
     this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateLineSegment());
     //this._createGeomBtnGrp.addRadioButton(new skCmdDefCreateCircle());
@@ -45,6 +46,12 @@ function skView() {
         // this is a temporary implementation
         //
         this._createGeomBtnGrp.onSetSelected(null);
+    }
+    
+    this.selectSelGeometryButton = function (b) {
+        selGeomBtn.setSelected(b);
+        if (b)
+            this._createGeomBtnGrp.onSetSelected(selGeomBtn);
     }
 }
 
@@ -121,9 +128,7 @@ function skCmdDefSelectGeom() {
     skCmdDef.call(this, "Select", "Select", "icon toolbar-select");
 
     this.createCommand = function () {
-        var cmd = new skSelectGeomCommand();
-        this.setSelected(true);
-        return cmd;
+        return new skSelectGeomCommand();
     }
 }
 skCmdDefSelectGeom.prototype = new skCmdDef();
@@ -458,12 +463,6 @@ skCreateRectangleCommand.prototype = new skCreateGeomCommand();
 function skSelectGeomCommand() {
     skCommand.call(this);
 
-    rnView.deSelectAllButtons();
-    if (rnController) {                 // when loading, the 'rnController' is not created yet
-        rnController.deselectAll();
-    }
-    view.draw();
-
     this._hitPathItem = null;
 
     this.onMouseDown = function (event) {
@@ -531,6 +530,23 @@ function skSelectGeomCommand() {
         //
         this._hitPathItem = null;
         rnGraphicsManager.drawingCanvas().style.cursor = "default";
+    }
+    
+    this.onActivate = function () {
+        if (rnView) {
+            rnView.deSelectAllButtons();
+            rnView.selectSelGeometryButton(true);
+        }
+        if (rnController) {                 // when loading, the 'rnController' is not created yet
+            rnController.deselectAll();
+        }
+        view.draw();
+    }
+    
+    this.onTerminate = function () {
+        if (rnView) {
+            rnView.selectSelGeometryButton(false);
+        }
     }
 }
 
