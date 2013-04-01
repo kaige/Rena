@@ -19,5 +19,15 @@ function skApp() {
 	this.elements = function () {
 	    return this._elements;
 	}
-	
+
+	this.constraints = function () {
+	    return this._constraints;
+	}
+
+	this.update = function () {
+	    var ctx = new skConstraintSolveContext(this);
+	    ctx.loadConstraints();
+	    ctx.solve();
+	    ctx.translateSolution();
+	}
 }

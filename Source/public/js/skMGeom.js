@@ -105,6 +105,15 @@ function skMPoint(x, y) {
 	    var dy = this._y - pt._y;
 	    return Math.sqrt(dx * dx + dy * dy);
 	}
+
+	this.mid = function (pt) {
+	    return new skMPoint(0.5*(this._x + pt._x), 0.5*(this._y + pt._y));
+	}
+	
+    this.reset = function (pt1, pt2) {
+	    this._x = pt1._x;
+	    this._y = pt1._y;
+	}
 }
 
 //-------------------------------------------------
@@ -131,6 +140,10 @@ function skMLine(pt, vec) {
         var lateral = q.dot(this._direction);
         var dist = Math.sqrt(q.dot(q) - lateral * lateral);
         return dist;
+    }
+
+    this.move = function (dx, dy) {
+        this._startPt.move(dx, dy);
     }
 }
 
@@ -179,6 +192,10 @@ function skMLineSegment(pt1, pt2) {
 	this.length = function () {
 	    return this._startPt.distance(this._endPt);
 	}
+
+	this.mid = function () {
+	    return this._startPt.mid(this._endPt);
+	}
 }
 
 //-------------------------------------------------
@@ -224,7 +241,11 @@ function skMRectangle(pt1, pt2) {
 
 	this.setAngle = function (ang) {
 	    this._angle = ang;
-	}	
+	}
+
+	this.center = function () {
+	    return this._topLeft.mid(this._bottomRight);
+	}
 }
 
 //-------------------------------------------------
@@ -267,5 +288,9 @@ function skMOval(rect, circumscribed) {
 
 	this.setAngle = function (ang) {
 	    this._rect.setAngle(ang);
+	}
+
+	this.center = function () {
+	    return this._rect.center();
 	}
 }

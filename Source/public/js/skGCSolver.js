@@ -8,9 +8,25 @@ function skGCSolverGeom(mathGeometry, solver) {
     this._geom = mathGeometry;
     this._solver = solver;
     this._isGrounded = false;
+    this._owner = null;
 
     this.geom = function () {
         return this._geom;
+    }
+
+    this.owner = function () {
+        return this._owner;
+    }
+
+    this.setOwner = function (grp) {
+        this._owner = grp;
+    }
+
+    this.getOwner = function () {
+        if (this._owner)
+            return this._owner.getOwner();
+        else
+            return this;
     }
 
     this.setIsGrounded = function (b) {
@@ -22,9 +38,55 @@ function skGCSolverGeom(mathGeometry, solver) {
     }
 
     this.getIndex = function () {
-        return this._solver.getIndex(this);
+        return this._solver.getIndex(this.getOwner());
+    }
+
+    this.pos = function () { }
+    this.move = function (dx, dy) { }
+}
+
+//-------------------------------------------------
+//
+//	solver geometry type
+//
+//-------------------------------------------------
+
+function skGCSolverGeomGroup(solver) {
+    skGCSolverGeom.call(this, new skMPoint(0, 0), solver);
+
+    this._oldPos = new skMPoint(this._geom.x(), this._geom.y());
+    this._children = [];
+
+    this.add = function (g) {
+        this._children.push(g);
+        g.setOwner(this);
+    }
+
+    this.numberOfVariables = function () {
+        return 2;   // (x, y)
+    }
+
+    this.setVariables = function (x) {
+        this._geom.setX(x[x.index++]);
+        this._geom.setY(x[x.index++]);
+
+        var delta = this._geom.subtract(this._oldPos);
+        var i;
+        for (i = 0; i < this._children.length; i++) {
+            this._children[i].move(delta.x(), delta.y());
+        }
+    }
+
+    this.getVariables = function (x) {
+        x[x.index++] = this._geom.x();
+        x[x.index++] = this._geom.y();
+    }
+
+    this.pos = function () {
+        return new skMPoint(this._geom.x(), this._geom.y());
     }
 }
+
 
 //-------------------------------------------------
 //
@@ -47,6 +109,14 @@ function skSPoint(mPt, solver) {
     this.getVariables = function (x) {
         x[x.index++] = this._geom.x();
         x[x.index++] = this._geom.y();
+    }
+
+    this.pos = function () {
+        return new skMPoint(this._geom.x(), this._geom.y());
+    }
+
+    this.move = function (dx, dy) {
+        this._geom.move(dx, dy);
     }
 }
 
@@ -73,6 +143,14 @@ function skSLine(mLn, solver) {
     this.getVariables = function (x) {
         x[x.index++] = this._geom.startPt().x();
         x[x.index++] = this._geom.startPt().y();
+    }
+
+    this.pos = function () {
+        return new skMPoint(this._geom.startPt().x(), this._geom.startPt().y());
+    }
+
+    this.move = function (dx, dy) {
+        this._geom.move(dx, dy);
     }
 }
 
@@ -178,7 +256,7 @@ function skGCSolver() {
             if (this._geoms[i] === g)
                 return index;
             else {
-                if (!this._geoms[i].isGrounded())
+                if (!this._geoms[i].isGrounded() && !this._geoms[i].owner())
                     index += this._geoms[i].numberOfVariables();
             }
         }
@@ -198,6 +276,12 @@ function skGCSolver() {
         return sLn;
     }
 
+    this.createGroup = function () {
+        var grp = new skGCSolverGeomGroup(this);
+        this.addGeometry(grp);
+        return grp;
+    }
+
     this.createDistPtLn = function (pt, ln, dist) {
         var con = new skGCSDistPtLn(pt, ln, dist);
         this.addConstraint(con);
@@ -208,7 +292,7 @@ function skGCSolver() {
         var n = 0;
         var i;
         for (i = 0; i < this._geoms.length; i++) {
-            if (!this._geoms[i].isGrounded())
+            if (!this._geoms[i].isGrounded() && !this._geoms[i].owner())
                 n += this._geoms[i].numberOfVariables();
         }
 
@@ -228,7 +312,7 @@ function skGCSolver() {
         x.index = 0;
         var i = 0;
         for (i = 0; i < this._geoms.length; i++) {
-            if (!this._geoms[i].isGrounded()) {
+            if (!this._geoms[i].isGrounded() && !this._geoms[i].owner()) {
                 this._geoms[i].setVariables(x);
             }
         }
@@ -238,7 +322,7 @@ function skGCSolver() {
         x.index = 0;
         var i = 0;
         for (i = 0; i < this._geoms.length; i++) {
-            if (!this._geoms[i].isGrounded()) {
+            if (!this._geoms[i].isGrounded() && !this._geoms[i].owner()) {
                 this._geoms[i].getVariables(x);
             }
         }

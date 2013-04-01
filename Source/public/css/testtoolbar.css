@@ -52,6 +52,9 @@
       background-position: 0;
     }
 	
+    .toolbar-select {
+		background-image: url(../img/toolbar/select.png);
+	}
 	.toolbar-point {
 		background-image: url(../img/toolbar/point.png);
 		/* background-image: url(../3p/closure-library/closure/goog/images/toolbar_icons.gif); */
@@ -173,10 +176,70 @@
       background-color: #e8eef7 !important;
     }
 
-    .goog-menuseparator {
-      position: relative;
-      margin: 2px 0;
-      border-top: 1px solid #999;
-      padding: 0;
-      outline: none;
+    .goog-menuseparator
+    {
+        position: relative;
+        margin: 2px 0;
+        border-top: 1px solid #999;
+        padding: 0;
+        outline: none;
+    }
+
+    /*
+     * Dialog box styles for the dimension's value editing dialog box
+     */
+    .modal-dialog-bg;
+    {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        background-color: #FFF;
+    }
+
+    .modal-dialog
+    {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 70px;
+        background-color: #FFF;
+        border: 2px solid #99c0ff;
+    }
+
+    .modal-dialog-title
+    {
+        padding: 0px;
+        font: bold 0px verdana;
+    }
+
+    .modal-dialog-content
+    {
+        background: #FFF;
+        padding: 0px 0px 0px 0px;
+        font: normal 0px verdana;
+    }
+
+    .modal-dialog-userInput
+    {
+        font: normal 12px verdana;
+        padding: 0px 2px 0px 0px;
+        width: 90%;
+    }
+
+    .modal-dialog-buttons
+    {
+        background: #FFF;
+        margin: 0px;
+        padding: 0px 0px 0px 0px;
+        font: normal 0px verdana;
+        visibility: hidden;
+    }
+
+    .modal-dialog-buttons button
+    {
+        background: #FFF;
+        margin: 0px;
+        padding: 0px 0px 0px 0px;
+        font: normal 0px verdana;
+        visibility: hidden;
     }

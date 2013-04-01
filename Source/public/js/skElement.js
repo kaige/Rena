@@ -20,6 +20,7 @@ function skElement() {
 	this._connectors = [];
 	this._geom = null;
 	this._listeners = [];
+	this._grounded = false;
 	
 	var geomChangeEvent = {message: "geometry changed"};
 	
@@ -92,6 +93,14 @@ function skElement() {
 	    var i = this._listeners.indexOf(listener);
 	    this._listeners.splice(i, 1);
 	}
+
+	this.grounded = function () {
+	    return this._grounded;
+	}
+
+	this.setGrounded = function (b) {
+	    this._grounded = b;
+	}
 }
 
 
@@ -105,7 +114,6 @@ function skPoint (point) {
 	skElement.call(this);		// inherit properties
 	
 	this._geom = point;
-	
 }
 
 skPoint.prototype = new skElement();			// inherit methods
@@ -120,7 +128,7 @@ function skLineSegment (lineSegment) {
 	skElement.call(this);			// inherit properties
 	
 	this._geom = lineSegment;
-	
+
 	this.geomType = function() {
 		return kLineSegment;
 	}
@@ -138,7 +146,7 @@ function skRectangle (rectangle) {
 	skElement.call(this);		// inherit properties
 	
 	this._geom = rectangle;
-	
+
 	this.geomType = function() {
 		return kRectangle;
 	}
