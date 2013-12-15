@@ -745,7 +745,7 @@ function skBBoxHandleEndPt(pt, bbox, name) {
     this.isHandlePt = true;
 
     this.setCursorStyle = function () {
-        rnGraphicsManager.drawingCanvas().style.cursor = "url(\"img\\\\cursor_rotate_highlight.cur\") 10 10, crosshair";
+        rnGraphicsManager.drawingCanvas().style.cursor = "url(\"img\\\\cursor_rotate_highlight.png\") 10 10, crosshair";
     }
 }
 
@@ -817,16 +817,16 @@ function skBBoxAnchorPt() {
         // determine cursor style
         //
         if (vec.x < 0.382683) {     //sin(22.5 deg) == 0.382683
-            canvas.style.cursor = "n-resize";
+            canvas.style.cursor = "ns-resize";
         }
         else if (vec.x > 0.92388) {     //cos(22.5 deg) == 0.92388
-            canvas.style.cursor = "e-resize";
+            canvas.style.cursor = "ew-resize";
         }
         else if (vec.y > 0) {
-            canvas.style.cursor = "se-resize";
+            canvas.style.cursor = "nwse-resize";
         }
         else
-            canvas.style.cursor = "ne-resize";
+            canvas.style.cursor = "nesw-resize";
     }
 }
 
@@ -1001,9 +1001,9 @@ function skBBoxLineEndPt(pt, bbox, name) {
         var vec = pt1.subtract(pt2);
         var mul = vec.x * vec.y;
         if (mul > 0)        // note the canvas coordinate system is y-flip with normal orthogonal system
-            rnGraphicsManager.drawingCanvas().style.cursor = "se-resize";
+            rnGraphicsManager.drawingCanvas().style.cursor = "nwse-resize";
         else
-            rnGraphicsManager.drawingCanvas().style.cursor = "ne-resize";
+            rnGraphicsManager.drawingCanvas().style.cursor = "nesw-resize";
     }
 
     this.move = function (delta) {

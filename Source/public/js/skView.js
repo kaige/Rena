@@ -9,6 +9,26 @@ var rnApp, rnView, rnController, rnGraphicsManager;
 window.addEventListener('load', onLoad, false);
 
 function onLoad() {
+	// check browser version
+    var isOpera = !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+    // Opera 8.0+ (UA detection to detect Blink/v8-powered Opera)
+	var isFirefox = typeof InstallTrigger !== 'undefined';   // Firefox 1.0+
+	var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+    // At least Safari 3+: "[object HTMLElementConstructor]"
+	var isChrome = !!window.chrome && !isOpera;              // Chrome 1+
+	var isIE = /*@cc_on!@*/false || !!document.documentMode;   // At least IE6
+
+    if (!isChrome) {
+    	var iDiv = document.createElement('div');
+		iDiv.id = 'warning_message';
+		iDiv.className = 'warning_message';
+		var drawingArea = document.getElementById('drawing_background_pre');
+		document.getElementsByTagName('body')[0].insertBefore(iDiv,drawingArea);
+
+		iDiv.innerHTML = "请使用Chrome浏览器获得最佳使用体验。暂不支持: Safari, IE9.0以下版本。Please use Chrome for best use experience.\t\tFor now it doesn't support: Safari, IE9.0 below";
+    }
+
+
     rnApp = new skApp();                            // MVC-model
     rnGraphicsManager = new skGraphicsManager();    // MVC-view (graphics area)
     rnView = new skView();                          // MVC-view (menu, tool bar, buttons)
@@ -656,7 +676,7 @@ function skRotateGeomCommand(handlePtPathItem) {
     skEditGeomCommand.call(this, handlePtPathItem);
 
     var canvas = rnGraphicsManager.drawingCanvas();
-    canvas.style.cursor = "url(\"img\\\\cursor_rotate_pressed.cur\") 10 10, crosshair";     //"url(cursor_rotate_pressed.cur)" doesn't work
+    canvas.style.cursor = "url(\"img\\\\cursor_rotate_pressed.png\") 10 10, crosshair";     //"url(cursor_rotate_pressed.cur)" doesn't work
 
     var oldAngle = handlePtPathItem.dispElement.skElement().angle();
 
@@ -927,11 +947,16 @@ function editDimensionValue(dispDim, dlgPos) {
     editBox.setDefaultValue(dispDim.skConstraint().offset().toFixed(2));
     editBox.setVisible(true);
 
-    // set dialog's position, we add a "magic" offset number here,
-    // which are actually the canvas's position in the window.
-    // In the future we should use code to calculate this number
+    // set dialog's position, adjusting it according to the canvas position and edit box size
     //
-    goog.style.setPosition(editBox.getDialogElement(), dlgPos.x - 10, dlgPos.y + 75);
+    var drawingArea = document.getElementById('drawing_background');
+    var drawingRect = drawingArea.getBoundingClientRect();
+    var offsetX = (drawingRect.right - drawingRect.left) * 0.2;
+    var offsetY = drawingRect.top;
+    var editBoxRect = editBox.getElement().getBoundingClientRect();
+    var dx = -(editBoxRect.right - editBoxRect.left)*0.5;
+    var dy = -(editBoxRect.bottom - editBoxRect.top)*0.5;
+    goog.style.setPosition(editBox.getDialogElement(), dlgPos.x + offsetX + dx, dlgPos.y + offsetY + dy);
 }
 
 //-------------------------------------------------

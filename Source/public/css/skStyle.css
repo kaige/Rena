@@ -1,75 +1,35 @@
-#tool_bar
+body, html
 {
-    top:10px;
-    left:30px;
-    width: 940px;
-    border: 1px solid #101010;
-    box-shadow: 1px 1px 0px #707070;
-    background-color: #FFFAFA;
-    border-radius:2px;
+    background-color: #F8F8F8;
+    overflow-x: hidden; 
+    overflow-y: hidden;
 }
+
 
 .tool_bar
 {
-	margin: 10px 0 10px 0px;
-	box-shadow: 1px 1px 0px #707070;
-    background-color: #FAFAFA;
-    border-radius:2px;
-	height: 75px;
+	margin-left: 20%;
+	margin-right: 20%;
+	box-shadow: 0 0 1px 0px #101010;
 }
 
 .tool_bar_group
 {
 	margin: 1px;
-	width: 120px;
-	height: 80px;
-	border: 1px solid #B8B5B5;
-	border-radius: 2px;
-}
-
-#drawing_tool
-{
-    top:15px;
-    left:40px;
-    height: 80px;
-    width: 100px;
-    border: 1px solid #808080;
-    border-radius:1px;
-}
-
-#line_btn
-{
-    position:relative;
-    top:2px;
-    left:2px; 
-}
-
-#oval_btn
-{
-    position:relative;
-    top:2px;
-    left:1px;
-}
-
-#drawing_canvas
-{
-    position:relative;
-    left:0px;
 }
 
 #drawing_background
 {
-    left:0px;
-    height:1300px;
-    background-color:#C3C7CB
+    height:100%;
+    background-color:#C3C7CB;
 }
 
 #drawing_area
 {
-	margin: 5px;
-    left:50px;
-    height:600px;
-    width:900px;
+	margin-left: 20%;
+	margin-right: 20%;
+    height:80%;
+    width:60%;
     background-color:#FFFFFF;
-    box-shadow: 0 0 20px 0px #101010 
+    box-shadow: 0 0 20px 0px #101010; 
 }
