@@ -1,0 +1,42 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node', '/usr/local/bin/npm', 'install', '.' ]
+2 info using npm@1.2.23
+3 info using node@v0.10.22
+4 verbose read json /Users/kaizhang/GitHubCode/Rena/package.json
+5 warn package.json Rena@0.0.0-1 No repository field.
+6 verbose from cache /Users/kaizhang/GitHubCode/Rena/package.json
+7 verbose readDependencies using package.json deps
+8 verbose cache add [ '.', null ]
+9 verbose cache add name=undefined spec="." args=[".",null]
+10 verbose parsed url { protocol: null,
+10 verbose parsed url   slashes: null,
+10 verbose parsed url   auth: null,
+10 verbose parsed url   host: null,
+10 verbose parsed url   port: null,
+10 verbose parsed url   hostname: null,
+10 verbose parsed url   hash: null,
+10 verbose parsed url   search: null,
+10 verbose parsed url   query: null,
+10 verbose parsed url   pathname: '.',
+10 verbose parsed url   path: '.',
+10 verbose parsed url   href: '.' }
+11 silly lockFile 3a52ce78- .
+12 verbose lock . /Users/kaizhang/.npm/3a52ce78-.lock
+13 silly lockFile 3a52ce78- .
+14 error addLocal Could not install .
+15 error Error: EACCES, open '/Users/kaizhang/.npm/3a52ce78-.lock'
+15 error  { [Error: EACCES, open '/Users/kaizhang/.npm/3a52ce78-.lock']
+15 error   errno: 3,
+15 error   code: 'EACCES',
+15 error   path: '/Users/kaizhang/.npm/3a52ce78-.lock' }
+16 error Please try running this command again as root/Administrator.
+17 error System Darwin 13.0.0
+18 error command "node" "/usr/local/bin/npm" "install" "."
+19 error cwd /Users/kaizhang/GitHubCode/Rena/Source
+20 error node -v v0.10.22
+21 error npm -v 1.2.23
+22 error path /Users/kaizhang/.npm/3a52ce78-.lock
+23 error code EACCES
+24 error errno 3
+25 error stack Error: EACCES, open '/Users/kaizhang/.npm/3a52ce78-.lock'
+26 verbose exit [ 3, true ]
