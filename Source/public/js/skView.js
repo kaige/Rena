@@ -16,16 +16,17 @@ function onLoad() {
 	var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
     // At least Safari 3+: "[object HTMLElementConstructor]"
 	var isChrome = !!window.chrome && !isOpera;              // Chrome 1+
-	var isIE = /*@cc_on!@*/false || !!document.documentMode;   // At least IE6
+	// the below IE test make the YUI compressor error so disable it
+    //var isIE = /*@cc_on!@*/false || !!document.documentMode;   // At least IE6
 
-    if (!isChrome) {
+    if (!isChrome && !isSafari && !isFirefox) {
     	var iDiv = document.createElement('div');
 		iDiv.id = 'warning_message';
 		iDiv.className = 'warning_message';
 		var drawingArea = document.getElementById('drawing_background_pre');
 		document.getElementsByTagName('body')[0].insertBefore(iDiv,drawingArea);
 
-		iDiv.innerHTML = "请使用Chrome浏览器获得最佳使用体验。暂不支持: Safari, IE9.0以下版本。Please use Chrome for best use experience.\t\tFor now it doesn't support: Safari, IE9.0 below";
+		iDiv.innerHTML = "请使用Chrome浏览器获得最佳使用体验。暂不支持: IE9.0以下版本。Please use Chrome for best use experience.\t\tFor now it doesn't support: IE9.0 below";
     }
 
 
@@ -323,7 +324,7 @@ function skCreateGeomCommand() {
         rnController.setActiveCommand(new skSelectGeomCommand());
         dispElement.setIsSelected(true);
 
-        view.draw();
+        paper.view.draw();
     }
 }
 
@@ -339,7 +340,7 @@ function skCreatePointCommand() {
     skCreateGeomCommand.call(this);
 
     this.createPath = function (pt) {
-        return new Path.Circle(pt, 4);
+        return new paper.Path.Circle(pt, 4);
     }
 
     this.createSkElement = function (mpt) {
@@ -367,7 +368,7 @@ function skCreateLineSegmentCommand() {
     skCreateGeomCommand.call(this);
 
     this.createPath = function (pt1, pt2) {
-        return new Path.Line(pt1, pt2);
+        return new paper.Path.Line(pt1, pt2);
     }
 
     this.createSkElement = function (mpt1, mpt2) {
@@ -397,7 +398,7 @@ function skCreateCircleCommand() {
 
     this.createPath = function (pt1, pt2) {
         //var enclosingRect = new Circle(pt1, pt2);
-        //var path = new Path.Circle(enclosingRect, false);
+        //var path = new paper.Path.Circle(enclosingRect, false);
         //return path;
     }
 
@@ -425,8 +426,8 @@ function skCreateOvalCommand() {
     skCreateGeomCommand.call(this);
 
     this.createPath = function (pt1, pt2) {
-        var enclosingRect = new Rectangle(pt1, pt2);
-        var path = new Path.Oval(enclosingRect, false);
+        var enclosingRect = new paper.Rectangle(pt1, pt2);
+        var path = new paper.Path.Oval(enclosingRect, false);
         return path;
     }
 
@@ -456,7 +457,7 @@ function skCreateRectangleCommand() {
     skCreateGeomCommand.call(this);
 
     this.createPath = function (pt1, pt2) {
-        var path = new Path.Rectangle(pt1, pt2);
+        var path = new paper.Path.Rectangle(pt1, pt2);
         return path;
     }
 
@@ -513,7 +514,7 @@ function skSelectGeomCommand() {
         }
 
 
-        view.draw();
+        paper.view.draw();
     }
 
     this.onMouseMove = function (event) {
@@ -525,7 +526,7 @@ function skSelectGeomCommand() {
             fill: true,
             tolerance: 5
         };
-        var hitResult = project.hitTest(event.point, hitOptions);
+        var hitResult = paper.project.hitTest(event.point, hitOptions);
 
         if (hitResult && hitResult.item) {
             this._hitPathItem = hitResult.item;
@@ -544,7 +545,7 @@ function skSelectGeomCommand() {
         // then we try to hit the text item:  this still doesn't work, paper.js seems can't hit test text
         //
         //var hitOptions2 = { type: TextItem, tolerance: 5 };
-        //var hitResult = project.hitTest(event.point, hitOptions2);
+        //var hitResult = paper.project.hitTest(event.point, hitOptions2);
         //if (hitResult && hitResult.item) { this._hitPathItem = hitResult.item;  return; }
 
         // default case:
@@ -570,7 +571,7 @@ function skSelectGeomCommand() {
         if (rnController) {                 // when loading, the 'rnController' is not created yet
             rnController.deselectAll();
         }
-        view.draw();
+        paper.view.draw();
     }
     
     this.onTerminate = function () {
@@ -812,7 +813,7 @@ function skCreateDimensionCommand() {
     this.onMouseMove = function (event) {
         this._highlightGeom = null;
 
-        var hitResult = project.hitTest(event.point, hitOptions);
+        var hitResult = paper.project.hitTest(event.point, hitOptions);
         if (hitResult && hitResult.item && hitResult.item.dispElement) {
         
             var dispElement = hitResult.item.dispElement;           
@@ -846,7 +847,7 @@ function skCreateDimensionCommand() {
             }
         }
         else {      // edit the value of the dimension
-            var hitResult = project.hitTest(event.point, hitOptions);
+            var hitResult = paper.project.hitTest(event.point, hitOptions);
             if (hitResult && hitResult.item && hitResult.item.dispDimText) {
                 var dispDim = hitResult.item.dispDimension;
                 var pos = hitResult.item.position;
@@ -938,7 +939,7 @@ function editDimensionValue(dispDim, dlgPos) {
             dispDim.skConstraint().onEditOffsetValue();
             dispDim.draw(dispDim.textPos());                        
             rnController.updateSkElementPos();
-            view.draw();
+            paper.view.draw();
             dispDim.skConstraint().afterEditOffsetValue();
         }
     }

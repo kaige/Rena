@@ -11,16 +11,15 @@ function skGraphicsManager() {
 	
 	// set up paper with canvas
 	//
-	paper.install(window);
 	this._drawingCanvas = document.getElementById('drawing_canvas');
 	paper.setup(this._drawingCanvas);
 
 	// set up mouse event
 	//
-	var tool = new Tool();
+	var tool = new paper.Tool();
 
 	tool.onKeyDown = function (event) {
-	    if (Key.isDown('escape')) {
+	    if (paper.Key.isDown('escape')) {
 	        rnController.setActiveCommand(new skSelectGeomCommand());
 	    }
 	}
@@ -77,11 +76,11 @@ function skGraphicsManager() {
 
 var skConv = new (function () {
     this.toPaperPoint = function (mpt) {
-        return new Point(mpt.x(), mpt.y());
+        return new paper.Point(mpt.x(), mpt.y());
     }
 
     this.toPaperRect = function (mrect) {
-        return new Rectangle(this.toPaperPoint(mrect.topLeft()), this.toPaperPoint(mrect.bottomRight()));
+        return new paper.Rectangle(this.toPaperPoint(mrect.topLeft()), this.toPaperPoint(mrect.bottomRight()));
     }
 
     this.toMathPoint = function (pt) {
@@ -193,7 +192,7 @@ function skDispElement(element) {
 //-------------------------------------------------
 
 function skInvisibleCenterPoint(pt, owningDispElement) {
-    this._pathItem = new Path.Circle(pt, 4);
+    this._pathItem = new paper.Path.Circle(pt, 4);
     this._pathItem.invisibleCenter = true;
     this._pathItem.dispElement = owningDispElement;
     this._pathItem.name = "invisibleCenter";
@@ -217,7 +216,7 @@ function skDispPoint(pt) {
         var pt = this.skElement();
         var pt1 = skConv.toPaperPoint(pt.geom());
 
-        this._pathItem = new Path.Circle(pt1, 4);
+        this._pathItem = new paper.Path.Circle(pt1, 4);
         this._pathItem.dispElement = this;
         this._boundingBox = new skPointBounds(this);
 
@@ -231,7 +230,7 @@ function skDispPoint(pt) {
     }
 
     this.clonePathItem = function (pt) {
-        var tempPathItem = new Path.Circle(pt, 4);
+        var tempPathItem = new paper.Path.Circle(pt, 4);
         this.setDrawingStyle(tempPathItem, this.skElement());
         return tempPathItem;
     }
@@ -263,7 +262,7 @@ function skDispLineSegment(lnSeg) {
         var pt1 = skConv.toPaperPoint(lnSeg.geom().startPt());
         var pt2 = skConv.toPaperPoint(lnSeg.geom().endPt());
 
-        this._pathItem = new Path.Line(pt1, pt2);
+        this._pathItem = new paper.Path.Line(pt1, pt2);
         this._pathItem.dispElement = this;
         this._pathItem.name = "line";
         this._boundingBox = new skLineBounds(this);
@@ -272,7 +271,7 @@ function skDispLineSegment(lnSeg) {
     }
 
     this.clonePathItem = function (pt1, pt2) {
-        var tempPathItem = new Path.Line(pt1, pt2);
+        var tempPathItem = new paper.Path.Line(pt1, pt2);
         this.setDrawingStyle(tempPathItem, this.skElement());
         return tempPathItem;
     }
@@ -333,7 +332,7 @@ function skDispOval(oval) {
         var rect = skConv.toPaperRect(oval.geom().rect());
         var b = oval.geom().circum();
 
-        this._pathItem = new Path.Oval(rect, b);
+        this._pathItem = new paper.Path.Oval(rect, b);
         this._pathItem.dispElement = this;
         this._boundingBox = new skRectBounds(this);
 
@@ -346,7 +345,7 @@ function skDispOval(oval) {
     }
 
     this.clonePathItem = function (pt1, pt2) {
-        var tempPathItem = new Path.Oval(new Rectangle(pt1, pt2), this.skElement().geom().circum());
+        var tempPathItem = new paper.Path.Oval(new paper.Rectangle(pt1, pt2), this.skElement().geom().circum());
         tempPathItem.rotate(this.skElement().angle(), pt1.add(pt2).multiply(0.5));
         this.setDrawingStyle(tempPathItem, this.skElement());
         return tempPathItem;
@@ -392,7 +391,7 @@ function skDispRectangle(rect) {
         var rectElement = this.skElement();
         var rect = skConv.toPaperRect(rectElement.geom());
         
-        this._pathItem = new Path.Rectangle(rect);
+        this._pathItem = new paper.Path.Rectangle(rect);
         this._pathItem.dispElement = this;
         this._boundingBox = new skRectBounds(this);
 
@@ -403,7 +402,7 @@ function skDispRectangle(rect) {
     }
 
     this.clonePathItem = function (pt1, pt2) {
-        var tempPathItem = new Path.Rectangle(pt1, pt2);
+        var tempPathItem = new paper.Path.Rectangle(pt1, pt2);
         tempPathItem.rotate(this.skElement().angle(), pt1.add(pt2).multiply(0.5));
         this.setDrawingStyle(tempPathItem, this.skElement());
         return tempPathItem;
@@ -733,7 +732,7 @@ function skBBoxElement() {
 function skBBoxHandleEndPt(pt, bbox, name) {
     skBBoxElement.call(this);
 
-    var pathItem = Path.Circle(pt, this.r());
+    var pathItem = paper.Path.Circle(pt, this.r());
     pathItem.style = {
         fillColor: '#8BE73D',
         strokeColor: '#385D8A',
@@ -760,7 +759,7 @@ skBBoxHandleEndPt.prototype = new skBBoxElement();
 function skBBoxEdge(pt1, pt2, bbox, name) {
     skBBoxElement.call(this);
 
-    var pathItem = new Path.Line(pt1, pt2);
+    var pathItem = new paper.Path.Line(pt1, pt2);
     pathItem.style = {
         strokeColor: '#385D8A',
         strokeWidth: 1,
@@ -841,7 +840,7 @@ skBBoxAnchorPt.prototype = new skBBoxElement();
 function skBBoxCornerPt(pt, bbox, name) {
     skBBoxAnchorPt.call(this);
 
-    var pathItem = Path.Circle(pt, this.r());
+    var pathItem = paper.Path.Circle(pt, this.r());
     pathItem.style = {
         fillColor: '#C5E6EA',
         strokeColor: '#385D8A',
@@ -882,7 +881,7 @@ skBBoxCornerPt.prototype = new skBBoxAnchorPt();
 function skBBoxEdgeMidPt(pt, bbox, name) {
     skBBoxAnchorPt.call(this);
 
-    var pathItem = new Path.Rectangle(pt.x - this.r(), pt.y - this.r(), 2*this.r(), 2*this.r());
+    var pathItem = new paper.Path.Rectangle(pt.x - this.r(), pt.y - this.r(), 2*this.r(), 2*this.r());
     pathItem.style = {
         fillColor: '#C5E6EA',
         strokeColor: '#385D8A',
@@ -953,7 +952,7 @@ skBBoxEdgeMidPt.prototype = new skBBoxAnchorPt();
 function skBBoxPointPt(pt, bbox, name) {
     skBBoxAnchorPt.call(this);
 
-    var pathItem = Path.Circle(pt, this.r());
+    var pathItem = paper.Path.Circle(pt, this.r());
     pathItem.style = {
         fillColor: '#C5E6EA',
         strokeColor: '#385D8A',
@@ -985,7 +984,7 @@ skBBoxPointPt.prototype = new skBBoxAnchorPt();
 function skBBoxLineEndPt(pt, bbox, name) {
     skBBoxAnchorPt.call(this);
 
-    var pathItem = Path.Circle(pt, this.r());
+    var pathItem = paper.Path.Circle(pt, this.r());
     pathItem.style = {
         fillColor: '#C5E6EA',
         strokeColor: '#385D8A',
@@ -1157,12 +1156,12 @@ function skDispDimension(dispElement1, name1, dispElement2, name2, skDim) {
         
         var pt1 = pt;
         var negVec = vec.multiply(-1).normalize();
-        var perpVec = new Point(negVec.y, -negVec.x);
+        var perpVec = new paper.Point(negVec.y, -negVec.x);
         var mid = pt1.add(negVec.multiply(scale*height));
         var pt2 = mid.add(perpVec.multiply(scale*width*0.5));
         var pt3 = mid.add(perpVec.multiply(-1*scale*width*0.5));
         
-        var path = new Path();
+        var path = new paper.Path();
         path.closed = true;
         path.add(pt1);
         path.add(pt2);
@@ -1246,14 +1245,14 @@ function skDispLinearDimension(dispElement1, name1, dispElement2, name2, skDim) 
                 pt2 = dimPt2;
         }
 
-        this.addPathItem(new Path.Line(pt1, pt2));
-        this.addPathItem(new Path.Line(leadPt1, dimPt1));
-        this.addPathItem(new Path.Line(leadPt2, dimPt2));
+        this.addPathItem(new paper.Path.Line(pt1, pt2));
+        this.addPathItem(new paper.Path.Line(leadPt1, dimPt1));
+        this.addPathItem(new paper.Path.Line(leadPt2, dimPt2));
     }
 
     this.drawText = function () {
         var pos = this._textPos;
-        var text = new PointText(pos);
+        var text = new paper.PointText(pos);
         text.justification = 'center';
         text.fillColor = 'green';
         text.content = this._skConstraint.offset().toFixed(2).toString();
@@ -1265,7 +1264,7 @@ function skDispLinearDimension(dispElement1, name1, dispElement2, name2, skDim) 
         var dimPt1 = skConv.toPaperPoint(this.getDimPt1());
         var dimPt2 = skConv.toPaperPoint(this.getDimPt2());
         var vec = dimPt2.subtract(dimPt1).normalize();
-        var xAxis = new Point(1, 0)
+        var xAxis = new paper.Point(1, 0)
         if (vec.dot(xAxis) < 0)
             vec = vec.multiply(-1);
         var angle = xAxis.getDirectedAngle(vec);
@@ -1273,8 +1272,8 @@ function skDispLinearDimension(dispElement1, name1, dispElement2, name2, skDim) 
 
         // move the text a little bit above the dimension line so it looks more clear
         //
-        var yAxis = new Point(0, -1);
-        var newY = yAxis.rotate(angle, new Point(0, 0));
+        var yAxis = new paper.Point(0, -1);
+        var newY = yAxis.rotate(angle, new paper.Point(0, 0));
         var scale = 4;
         text.translate(newY.multiply(scale));
 
@@ -1283,7 +1282,7 @@ function skDispLinearDimension(dispElement1, name1, dispElement2, name2, skDim) 
         // for now paper.js can't hit test text, 
         // so we draw an invisible circle under the text to work around this
         //
-        var invisibleCircle = new Path.Circle(text.position, 10);
+        var invisibleCircle = new paper.Path.Circle(text.position, 10);
         this.addPathItem(invisibleCircle);
         invisibleCircle.dispDimText = true;      // add a property
         invisibleCircle.dispDimension = this;
