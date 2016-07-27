@@ -4,7 +4,7 @@ Project Rena is an online 2D drawing tool with dimensions and constraints capabi
 
 Please see a live demo here: [http://rena-kdict.rhcloud.com/](http://rena-kdict.rhcloud.com/)
 
-Currently it supports drawing line, rectangle, circle/eclipse and adding distance-point-line constraint. And it's easy to extend to other geometry and constraint types. It also supports geometry dragging.
+Currently it supports drawing line, rectangle, circle/ellipse and adding distance-point-line constraint. And it's easy to extend to other geometry and constraint types. It also supports geometry dragging.
 
 The project includes a simple geometric constraint solver written in javascript, which is based on a Newton equation solver, implemented on top of [numeric] (https://github.com/sloisel/numeric).
 
