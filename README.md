@@ -1,6 +1,6 @@
 Project Rena is an online 2D drawing tool with dimensions and constraints capability. 
 
-Please see a live demo here:[http://rena-kdict.rhcloud.com/](http://rena-kdict.rhcloud.com/)
+Please see a live demo here: [http://rena-kdict.rhcloud.com/](http://rena-kdict.rhcloud.com/)
 
 Currently it supports drawing line, rectangle, circle/eclipse and adding distance-point-line constraint. And it's easy to extend to other geometry and constraint types. It also supports geometry dragging.
 
