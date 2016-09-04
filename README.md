@@ -16,5 +16,5 @@ The project includes a simple geometric constraint solver written in javascript,
 ```
 npm install .
 npm run start
-localhost:8080
 ```
+Then you can access the app in the browser using localhost:8080
